@@ -1,9 +1,6 @@
 import 'dart:async';
-import 'dart:io';
 
-import 'package:free_chat/UI/account_page.dart';
 import 'package:free_chat/entity/backend/account.dart';
-import 'package:free_chat/entity/backend/sql_connection_settings.dart';
 import 'package:free_chat/entity/enums.dart';
 import 'package:free_chat/services/mysql_service.dart';
 import 'package:free_chat/util/function_pool.dart';

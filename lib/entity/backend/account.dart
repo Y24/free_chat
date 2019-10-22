@@ -1,4 +1,3 @@
-import 'package:free_chat/services/mysql_service.dart';
 import 'package:mysql1/mysql1.dart';
 
 import '../enums.dart';
