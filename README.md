@@ -1,6 +1,6 @@
 # free_chat
 
-A online chat application powered by Flutter.
+An online chat application powered by Flutter.
 
 ## Getting Started
 
