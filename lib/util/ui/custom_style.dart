@@ -3,6 +3,7 @@ import 'package:free_chat/configuration/configuration.dart';
 import 'package:free_chat/entity/enums.dart';
 import 'package:free_chat/util/function_pool.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomStyle extends StatefulWidget {
   final Widget child;
@@ -63,12 +64,20 @@ class CustomStyleState extends State<CustomStyle> {
   ThemeDataCode themeDataCode = Configuration.defThemeDataCode;
   CustomStyleState({this.child});
   @override
+  void initState() {
+    super.initState();
+    SharedPreferences.getInstance().then((prefs) {
+      setState(() {
+        language = FunctionPool.getLanguageFromCode(
+            code: FunctionPool.getCustomStyle(prefs, target: 'language'));
+        themeDataCode = FunctionPool.getThemeDataCodeFromStr(
+            FunctionPool.getCustomStyle(prefs, target: 'themeData'));
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    language =
-        FunctionPool.getLanguage(locale: Localizations.localeOf(context));
-    themeDataCode = Theme.of(context).brightness == Brightness.light
-        ? ThemeDataCode.defLight
-        : ThemeDataCode.defDark;
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<LanguageState>.value(

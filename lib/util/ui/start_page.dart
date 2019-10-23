@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:free_chat/UI/account_page.dart';
 import 'package:free_chat/UI/home_page.dart';
+import 'package:free_chat/configuration/configuration.dart';
+import 'package:free_chat/entity/enums.dart';
 import 'package:free_chat/util/function_pool.dart';
 import 'package:free_chat/util/ui/lifecycle_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,31 +18,33 @@ class StartPage extends StatefulWidget {
 class _StartPageState extends State<StartPage> {
   bool _isLogin = false;
   String _username = '';
-  @override
-  void initState() {
-    super.initState();
-  }
+  String languageCode;
+  ThemeDataCode themeDataCode;
 
   Future<bool> fetchLoginStatus() async {
     var prefs = await SharedPreferences.getInstance();
+    languageCode =
+        FunctionPool.getCustomStyle(prefs, target: 'language') ?? 'en';
+    themeDataCode = FunctionPool.getThemeDataCodeFromStr(
+        FunctionPool.getCustomStyle(prefs, target: 'themeData') ?? 'defLight');
     _isLogin =
-        await FunctionPool.getAccountInfo(prefs, target: 'loginStatus') ??
-            false;
+        FunctionPool.getAccountInfo(prefs, target: 'loginStatus') ?? false;
     if (_isLogin)
-      _username = await FunctionPool.getAccountInfo(prefs,
-          target: 'loginAccountUsername');
+      _username =
+          FunctionPool.getAccountInfo(prefs, target: 'loginAccountUsername');
     return _isLogin;
   }
 
   @override
   Widget build(BuildContext context) {
-    // fetchLoginStatus();
     return FutureBuilder(
         future: fetchLoginStatus(),
         builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
           switch (snapshot.connectionState) {
             case (ConnectionState.done):
               return MaterialApp(
+                locale: Locale(languageCode),
+                theme: FunctionPool.getThemeData(themeDataCode: themeDataCode),
                 home: CustomStyle(
                     child: snapshot.data
                         ? LifecycleManager(

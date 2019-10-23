@@ -126,8 +126,15 @@ class LoginUIState extends State<LoginUI> {
                           Configuration.languagesStr[languageState.language]),
                       onChanged: (newLanguage) {
                         if (newLanguage != languageState.language) {
-                          languageState.switchTo(newLanguage: newLanguage);
-                          setState(() {});
+                          SharedPreferences.getInstance().then((prefs) {
+                            FunctionPool.addCustomStyle(prefs,
+                                target: 'language',
+                                value: FunctionPool.getCodeFromLanguage(
+                                    language: newLanguage));
+                          });
+                          setState(() {
+                            languageState.switchTo(newLanguage: newLanguage);
+                          });
                         }
                       },
                     ),
@@ -204,8 +211,9 @@ class LoginUIState extends State<LoginUI> {
                 key: 'usernameStr',
                 language: language,
               ),
-              hintText:
-                  '${Configuration.strPool['registerHintStr'][language]}${Validator.usernameMaxLength}',
+              hintText: FunctionPool.getStringRes(
+                      key: 'registerHintStr', language: language) +
+                  '${Validator.usernameMaxLength}',
               icon: Icon(
                 Icons.person,
                 size: 30,
@@ -265,8 +273,9 @@ class LoginUIState extends State<LoginUI> {
                 key: 'passwordStr',
                 language: language,
               ),
-              hintText:
-                  '${Configuration.strPool['registerHintStr'][language]}${Validator.passwordMaxLength}',
+              hintText: FunctionPool.getStringRes(
+                      key: 'registerHintStr', language: language) +
+                  '${Validator.passwordMaxLength}',
               icon: Icon(
                 Icons.lock,
                 size: 30,
@@ -784,11 +793,13 @@ class LoginUIState extends State<LoginUI> {
                                 FunctionPool.addAccountInfo(prefs,
                                     target: 'loginAccountUsername',
                                     value: _loginUsername);
+                               
                                 Navigator.of(context).pushAndRemoveUntil(
                                     FadeRoute(
                                         page: WelcomePage(
                                       language: language,
                                       username: _loginUsername,
+                                      themeData: Theme.of(context),
                                     )),
                                     (route) => route == null);
                                 setState(() {

@@ -15,6 +15,10 @@ abstract class Configuration {
       'loginStatus': 'LoginStatus',
       'loginAccountUsername': 'LoginAccountUsername',
     },
+    'customStyle': {
+      'language': 'Language',
+      'themeData': 'ThemeData',
+    },
   };
   static final appName = {
     Language.en: 'free chat',
@@ -36,10 +40,20 @@ abstract class Configuration {
       Language.en: 'Login',
       Language.zh: '登录',
     },
+    'logoutStr': {
+      Language.en: 'Logout',
+      Language.zh: '退出',
+    },
     'usernameStr': {
       Language.en: 'Username',
       Language.zh: '用户名',
     },
+    
+    'aboutStr': {
+      Language.en: 'About',
+      Language.zh: '关于',
+    },
+
     'passwordStr': {
       Language.en: 'Password',
       Language.zh: '密码',
@@ -99,6 +113,62 @@ abstract class Configuration {
     'unknownErrorStr': {
       Language.en: 'Unknown error!',
       Language.zh: '未知错误',
+    },
+    'messageStr': {
+      Language.en: 'Message',
+      Language.zh: '消息',
+    },
+    'contactsStr': {
+      Language.en: 'Contacts',
+      Language.zh: '联系人',
+    },
+    'accountStr': {
+      Language.en: 'Account',
+      Language.zh: '账户',
+    },
+    'informationStr': {
+      Language.en: 'Information',
+      Language.zh: '信息',
+    },
+    'onlineStr': {
+      Language.en: 'Online',
+      Language.zh: '在线',
+    },
+    'editStr': {
+      Language.en: 'Edit',
+      Language.zh: '编辑',
+    },
+    'settingsStr': {
+      Language.en: 'Settings',
+      Language.zh: '设置',
+    },
+    'appearenceStr': {
+      Language.en: 'Appearence',
+      Language.zh: '外观',
+    },
+    'notificationsStr': {
+      Language.en: 'Notifications',
+      Language.zh: '通知',
+    },
+    'securityStr': {
+      Language.en: 'Security',
+      Language.zh: '安全',
+    },
+    'chatStr': {
+      Language.en: 'Chat',
+      Language.zh: '聊天',
+    },
+    'historyStr': {
+      Language.en: 'History',
+      Language.zh: '记录',
+    },
+    'helpStr': {
+      Language.en: 'Help',
+      Language.zh: '帮助',
+    },
+    'ButtomContainerAboutStr': {
+      Language.en: 'Free Chat for Android by Y24',
+      Language.zh: '安卓版轻聊',
     },
   };
   static final imageResourcePathPrefix = 'res/images/';

@@ -12,8 +12,17 @@ abstract class FunctionPool {
     'en': Language.en,
     'zh': Language.zh,
   };
-  static Language getLanguage({final Locale locale}) {
+  static Language getLanguageFromLocale({final Locale locale}) {
     return _languages[locale.languageCode];
+  }
+
+  static Language getLanguageFromCode({final String code}) {
+    return _languages[code];
+  }
+
+  static String getCodeFromLanguage({final Language language}) {
+    return _languages
+        .map((String s, Language language) => MapEntry(language, s))[language];
   }
 
   static final _themeDatas = {
@@ -24,7 +33,7 @@ abstract class FunctionPool {
     return _themeDatas[themeDataCode];
   }
 
-  static String getStringRes({final key, final language}) {
+  static String getStringRes({@required final key, @required final language}) {
     return Configuration.strPool[key][language];
   }
 
@@ -33,38 +42,49 @@ abstract class FunctionPool {
   }
 
   static addAccountInfo(SharedPreferences preferences,
-      {String target, final value}) {
+      {String target, final value}) async {
     if (value is int) {
       print('$value: int');
-      preferences.setInt(
+      await preferences.setInt(
           Configuration.sharedPrefKeys['account'][target], value);
       return;
     }
     if (value is bool) {
       print('$value: bool');
-      preferences.setBool(
+      await preferences.setBool(
           Configuration.sharedPrefKeys['account'][target], value);
       return;
     }
     if (value is double) {
       print('$value: double');
-      preferences.setDouble(
+      await preferences.setDouble(
           Configuration.sharedPrefKeys['account'][target], value);
       return;
     }
     if (value is String) {
       print('$value: String');
-      preferences.setString(
+      await preferences.setString(
           Configuration.sharedPrefKeys['account'][target], value);
       return;
     }
     if (value is List<String>) {
       print('$value: List<String>');
-      preferences.setStringList(
+      await preferences.setStringList(
           Configuration.sharedPrefKeys['account'][target], value);
       return;
     }
     print('No suit type fo $value with runtimeType ${value.runtimeType}!');
+  }
+
+  static getCustomStyle(SharedPreferences preferences, {String target}) {
+    return preferences.get(Configuration.sharedPrefKeys['customStyle'][target]);
+  }
+
+  static Future<void> addCustomStyle(SharedPreferences preferences,
+      {String target, String value}) async {
+    print('set target:$target ,value:$value');
+    await preferences.setString(
+        Configuration.sharedPrefKeys['customStyle'][target], value);
   }
 
   static void showCustomAboutDialog({
@@ -105,5 +125,16 @@ abstract class FunctionPool {
         ),
       ),
     );
+  }
+
+  static ThemeDataCode getThemeDataCodeFromStr(String themeDataStr) {
+    switch (themeDataStr) {
+      case 'defLight':
+        return ThemeDataCode.defLight;
+      case 'defDark':
+        return ThemeDataCode.defDark;
+      default:
+        return ThemeDataCode.defLight;
+    }
   }
 }

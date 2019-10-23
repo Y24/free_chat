@@ -6,6 +6,10 @@
 import 'package:flutter/material.dart';
 import 'package:free_chat/UI/home_page.dart';
 import 'package:free_chat/configuration/configuration.dart';
+import 'package:free_chat/util/custom_will_pop_scope.dart';
+import 'package:free_chat/util/function_pool.dart';
+import 'package:free_chat/util/ui/custom_style.dart';
+import 'package:free_chat/util/ui/lifecycle_manager.dart';
 import 'package:free_chat/util/ui/page_tansitions/slide_route.dart';
 import 'package:intro_views_flutter/Models/page_view_model.dart';
 import 'package:intro_views_flutter/intro_views_flutter.dart';
@@ -15,7 +19,11 @@ class WelcomePage extends StatelessWidget {
   static final String path = 'lib\UI\wlecome.dart';
 
   final language;
-  WelcomePage({this.language, this.username});
+  final themeData;
+  WelcomePage(
+      {@required this.language,
+      @required this.username,
+      @required this.themeData});
 
   @override
   Widget build(BuildContext context) {
@@ -45,19 +53,33 @@ class WelcomePage extends StatelessWidget {
                 textStyle: TextStyle(color: Colors.black),
               )),
     ];
+
     return Scaffold(
       body: Stack(
         children: <Widget>[
           IntroViewsFlutter(
             pages,
             onTapDoneButton: () {
+              print('before enter home page : language: ' +
+                  FunctionPool.getCodeFromLanguage(language: language));
               Navigator.pushAndRemoveUntil(
                 context,
                 SlideRightRoute(
-                    page: HomePage(
-                  username: username,
+                    page: MaterialApp(
+                  locale: Locale(
+                      FunctionPool.getCodeFromLanguage(language: language)),
+                  theme: themeData,
+                  home: CustomStyle(
+                    child: LifecycleManager(
+                      child: CustomWillPopScope(
+                        child: HomePage(
+                          username: username,
+                        ),
+                      ),
+                    ),
+                  ),
                 )),
-                (route) => route==null,
+                (route) => route == null,
               );
             },
             showSkipButton: false,
