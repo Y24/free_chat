@@ -1,3 +1,6 @@
+#project
+lib/configuration/mysql_conf.dart
+
 # Miscellaneous
 *.class
 *.log
