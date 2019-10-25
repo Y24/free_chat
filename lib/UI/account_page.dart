@@ -20,9 +20,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AccountPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    print(Provider.of<LanguageState>(context).language.toString());
     final appTitle =
         Configuration.appName[Provider.of<LanguageState>(context).language];
-
+    print('appTitle: $appTitle');
     return MaterialApp(
       title: appTitle,
       theme: Provider.of<CustomThemeDataState>(context).themeData,
@@ -793,7 +794,7 @@ class LoginUIState extends State<LoginUI> {
                                 FunctionPool.addAccountInfo(prefs,
                                     target: 'loginAccountUsername',
                                     value: _loginUsername);
-                               
+
                                 Navigator.of(context).pushAndRemoveUntil(
                                     FadeRoute(
                                         page: WelcomePage(

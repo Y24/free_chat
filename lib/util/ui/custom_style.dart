@@ -60,6 +60,7 @@ class CustomThemeDataState extends ChangeNotifier {
 
 class CustomStyleState extends State<CustomStyle> {
   final Widget child;
+  bool _isFetching = true;
   Language language = Configuration.defLanguage;
   ThemeDataCode themeDataCode = Configuration.defThemeDataCode;
   CustomStyleState({this.child});
@@ -69,26 +70,32 @@ class CustomStyleState extends State<CustomStyle> {
     SharedPreferences.getInstance().then((prefs) {
       setState(() {
         language = FunctionPool.getLanguageFromCode(
-            code: FunctionPool.getCustomStyle(prefs, target: 'language'));
+                code: FunctionPool.getCustomStyle(prefs, target: 'language')) ??
+            Configuration.defLanguage;
         themeDataCode = FunctionPool.getThemeDataCodeFromStr(
-            FunctionPool.getCustomStyle(prefs, target: 'themeData'));
+                FunctionPool.getCustomStyle(prefs, target: 'themeData')) ??
+            Configuration.defThemeDataCode;
+        _isFetching = false;
       });
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider<LanguageState>.value(
-          value: LanguageState(language),
-        ),
-        ChangeNotifierProvider<CustomThemeDataState>.value(
-          value: CustomThemeDataState(
-              FunctionPool.getThemeData(themeDataCode: themeDataCode)),
-        ),
-      ],
-      child: child,
-    );
+    if (!_isFetching)
+      return MultiProvider(
+        providers: [
+          ChangeNotifierProvider<LanguageState>.value(
+            value: LanguageState(language),
+          ),
+          ChangeNotifierProvider<CustomThemeDataState>.value(
+            value: CustomThemeDataState(
+                FunctionPool.getThemeData(themeDataCode: themeDataCode)),
+          ),
+        ],
+        child: child,
+      );
+    else
+      return MaterialApp(home: Scaffold(body: Container()));
   }
 }

@@ -43,7 +43,6 @@ class _StartPageState extends State<StartPage> {
           switch (snapshot.connectionState) {
             case (ConnectionState.done):
               return MaterialApp(
-                locale: Locale(languageCode),
                 theme: FunctionPool.getThemeData(themeDataCode: themeDataCode),
                 home: CustomStyle(
                     child: snapshot.data
