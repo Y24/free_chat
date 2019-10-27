@@ -1,21 +1,20 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:free_chat/UI/profile_page.dart';
+import 'package:free_chat/util/ui/page_tansitions/fade_route.dart';
 import 'package:free_chat/util/ui/page_tansitions/slide_route.dart';
 
-class ContactsEntity {
+class ContactEntity {
   final String imgUrl;
   final int userId;
   final String alias;
   final String subTitle;
-  const ContactsEntity({
+  const ContactEntity({
     this.imgUrl,
     this.userId,
     this.alias,
     this.subTitle,
   });
-  ContactsEntity.fromJson(final Map<String, String> json)
+  ContactEntity.fromJson(final Map<String, String> json)
       : assert(json != null),
         imgUrl = json['imgUrl'],
         userId = int.parse(json['userId']),
@@ -36,7 +35,7 @@ class ContactsEntity {
       subtitle: Text(subTitle),
       onTap: () {
         Navigator.of(context)
-            .push(SlideRightRoute(page: ProfilePage(userId: userId)));
+            .push(FadeRoute(page: ProfilePage(userId: userId)));
       },
     );
   }

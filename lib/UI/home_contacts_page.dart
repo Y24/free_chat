@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:free_chat/configuration/configuration.dart';
 import 'package:free_chat/configuration/home_contacts_conf.dart';
-import 'package:free_chat/entity/contacts_entity.dart';
-import 'package:free_chat/entity/enums.dart';
+import 'package:free_chat/entity/contact_entity.dart';
 import 'package:free_chat/util/ui/custom_style.dart';
 import 'package:free_chat/util/ui/people_expansion_panel.dart';
 import 'package:provider/provider.dart';
@@ -104,7 +102,7 @@ class _HomeContactsPageState extends State<HomeContactsPage>
                 ExpansionPanelList(
                   expansionCallback: (int index, bool isExpanded) {
                     setState(() {
-                      print('i: $i,index: $index,Expanded: $isExpanded');
+                     // print('i: $i,index: $index,Expanded: $isExpanded');
                       expandedFlag[i][index] = !isExpanded;
                     });
                   },
@@ -120,7 +118,7 @@ class _HomeContactsPageState extends State<HomeContactsPage>
                         context,
                         content: [
                           for (int i = 0; i < 10; i++)
-                            ContactsEntity(
+                            ContactEntity(
                               alias: 'alias',
                               subTitle: 'subTitle',
                             ),

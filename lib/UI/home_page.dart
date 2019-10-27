@@ -25,7 +25,7 @@ class HomePage extends StatelessWidget {
 }
 
 class HomeUI extends StatefulWidget {
-  GlobalKey<ScaffoldState> globalKey = GlobalKey();
+  final GlobalKey<ScaffoldState> globalKey = GlobalKey();
   final username;
   HomeUI({this.username});
   @override
@@ -33,7 +33,7 @@ class HomeUI extends StatefulWidget {
 }
 
 class _HomeUIState extends State<HomeUI> {
-  int _currentTabIndex = 1;
+  int _currentTabIndex = 0;
   List list = new List();
   int x = 0;
 
@@ -102,10 +102,9 @@ class _HomeUIState extends State<HomeUI> {
   AppBar _buildAppBar() {
     switch (_currentTabIndex) {
       case 0:
-        return AppBar();
       case 1:
         return AppBar(
-          title: Text('Contacts'),
+          title: Text(_currentTabIndex == 0 ? 'Messages' : 'Contacts'),
           actions: <Widget>[
             IconButton(
               icon: Icon(

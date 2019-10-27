@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:free_chat/entity/message_entity.dart';
 
 class HomeMessagesPage extends StatefulWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
@@ -9,14 +10,21 @@ class HomeMessagesPage extends StatefulWidget {
 }
 
 class _HomeMessagesPageState extends State<HomeMessagesPage> {
-  List list = new List();
+  List<MessageEntity> list = List.generate(
+    20,
+    (i) => MessageEntity(alias: 'Yue', subTitle: 'Love', trailing: '5:20 PM'),
+  );
   int x = 0;
   Future<Null> _onRefresh() async {
     x++;
     await Future.delayed(Duration(seconds: 1), () {
       print('refresh');
       setState(() {
-        list = List.generate(20, (i) => '第 $x 次刷新后数据 $i');
+        list = List.generate(
+          20,
+          (i) => MessageEntity(
+              alias: '$x Yue', subTitle: 'Love', trailing: '5:20 PM'),
+        );
       });
     });
   }
@@ -26,11 +34,8 @@ class _HomeMessagesPageState extends State<HomeMessagesPage> {
     return RefreshIndicator(
       child: ListView.builder(
         itemCount: list.length,
-        itemBuilder: (BuildContext context, int index) {
-          return ListTile(
-            title: Text(this.list[index]),
-          );
-        },
+        itemBuilder: (BuildContext context, int index) =>
+            list[index].toSlideItem(context),
       ),
       onRefresh: _onRefresh,
       // displacement:30,
