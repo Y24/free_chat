@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:free_chat/configuration/configuration.dart';
 import 'package:free_chat/entity/enums.dart';
+import 'package:free_chat/entity/history_entity.dart';
 import 'package:free_chat/util/ui/clip_oval_logo.dart';
 import 'package:free_chat/util/ui/custom_style.dart';
 import 'package:provider/provider.dart';
@@ -137,4 +138,35 @@ abstract class FunctionPool {
         return ThemeDataCode.defLight;
     }
   }
+
+  static bool shouldShowTimeStamp(final List<HistoryEntity> list, int index) {
+    assert(index < list.length && index >= 0);
+    if (index == list.length - 1) return false;
+    //  print(list[index].timestamp.difference(list[index + 1].timestamp).abs().inMinutes);
+    return list[index]
+            .timestamp
+            .difference(list[index + 1].timestamp)
+            .abs()
+            .inMinutes >
+        1;
+  }
+
+  static final Map<String, MessageSendStatus> _strToMSS = {
+    'processing': MessageSendStatus.processing,
+    'failture': MessageSendStatus.failture,
+    'success': MessageSendStatus.success,
+  };
+  static MessageSendStatus getMessageSendStatusByStr(String s) => _strToMSS[s];
+  static String getStrByMessageSendStatus(MessageSendStatus status) =>
+      _strToMSS.map((s, status) => MapEntry(status, s))[status];
+  static final Map<ChatProtocolCode, String> _cPCToStr = {
+    ChatProtocolCode.newSend: 'newSend',
+    ChatProtocolCode.reSend: 'reSend',
+    ChatProtocolCode.accept: 'accpet',
+    ChatProtocolCode.reject: 'reject',
+  };
+  static ChatProtocolCode getChatProtocolCodeByStr(String s) =>
+      _cPCToStr.map((code, s) => MapEntry(s, code))[s];
+  static String getStrByChatProtocolCode(ChatProtocolCode code) =>
+      _cPCToStr[code];
 }

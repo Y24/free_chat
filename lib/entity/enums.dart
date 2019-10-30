@@ -30,3 +30,17 @@ enum ThemeDataCode {
   defLight,
   defDark,
 }
+
+enum MessageSendStatus {
+  processing,
+  success,
+  failture,
+}
+
+enum ChatProtocolCode {
+  //handshake,
+  newSend,
+  reSend,
+  accept,
+  reject,
+}

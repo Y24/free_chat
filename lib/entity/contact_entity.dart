@@ -1,30 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:free_chat/UI/profile_page.dart';
 import 'package:free_chat/util/ui/page_tansitions/fade_route.dart';
-import 'package:free_chat/util/ui/page_tansitions/slide_route.dart';
 
 class ContactEntity {
-  final String imgUrl;
+  final String avatarUrl;
   final int userId;
   final String alias;
-  final String subTitle;
+  final String overview;
   const ContactEntity({
-    this.imgUrl,
+    this.avatarUrl,
     this.userId,
     this.alias,
-    this.subTitle,
+    this.overview,
   });
   ContactEntity.fromJson(final Map<String, String> json)
       : assert(json != null),
-        imgUrl = json['imgUrl'],
+        avatarUrl = json['avatarUrl'],
         userId = int.parse(json['userId']),
-        alias = json['title'],
-        subTitle = json['subTitle'];
+        alias = json['alias'],
+        overview = json['overview'];
   Map<String, String> toJson() => {
-        'imgUrl': imgUrl,
+        'avatarUrl': avatarUrl,
         'userId': userId.toString(),
         'alias': alias,
-        'subTitle': subTitle,
+        'overview': overview,
       };
   ListTile toListTile(BuildContext context) {
     return ListTile(
@@ -32,7 +31,7 @@ class ContactEntity {
         backgroundImage: AssetImage('res/images/logo.png'),
       ),
       title: Text(alias),
-      subtitle: Text(subTitle),
+      subtitle: Text(overview),
       onTap: () {
         Navigator.of(context)
             .push(FadeRoute(page: ProfilePage(userId: userId)));

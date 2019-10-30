@@ -120,7 +120,7 @@ class _HomeContactsPageState extends State<HomeContactsPage>
                           for (int i = 0; i < 10; i++)
                             ContactEntity(
                               alias: 'alias',
-                              subTitle: 'subTitle',
+                              overview: 'subTitle',
                             ),
                         ],
                         header: Padding(

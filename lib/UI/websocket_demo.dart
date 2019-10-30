@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:free_chat/entity/backend/protocol/chat_protocol.dart';
+import 'package:free_chat/services/chat_service.dart';
 
 class Client extends StatelessWidget {
   @override
@@ -24,24 +26,16 @@ class WebSocketDemo extends StatefulWidget {
 
 class _WebSocketDemoState extends State<WebSocketDemo> {
   TextEditingController _controller = new TextEditingController();
-  WebSocket webSocket;
-  Future<bool> initWebSocket() async {
-    try {
-      print('begin connecting');
-      // webSocket = await WebSocket.connect('ws://127.0.0.1:2424/');
-      webSocket = await WebSocket.connect('ws://y24.org.cn:2424');
-      webSocket.add('hello');
-      print('connect WebSocket: ${webSocket.runtimeType}');
-    } catch (e) {
-      return false;
-    }
-    return true;
-  }
+  ChatService chatService = ChatService(
+    userId: 1234,
+    isGroupChat: false,
+    targetId: 5678,
+  );
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: initWebSocket(),
+      future: chatService.initWebSocket(),
       builder: (context, snapshot) => Scaffold(
         appBar: AppBar(
           title: Text(widget.title),
@@ -53,11 +47,11 @@ class _WebSocketDemoState extends State<WebSocketDemo> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text('${snapshot.data}'),
-                    Text('The socket is : $webSocket'),
+                    Text('The socket is : ${chatService.stream}'),
                     RaisedButton(
                       onPressed: () {
                         setState(() {
-                          initWebSocket().then((value) {
+                          chatService.initWebSocket().then((value) {
                             print('result: $value');
                           });
                         });
@@ -72,7 +66,7 @@ class _WebSocketDemoState extends State<WebSocketDemo> {
                       ),
                     ),
                     StreamBuilder(
-                      stream: webSocket,
+                      stream: chatService.stream,
                       builder: (context, snapshot) {
                         return Padding(
                           padding: const EdgeInsets.symmetric(vertical: 24.0),
@@ -97,13 +91,14 @@ class _WebSocketDemoState extends State<WebSocketDemo> {
   void _sendMessage() {
     if (_controller.text.isNotEmpty) {
       print('Sending data: ${_controller.text}');
-      webSocket.add(_controller.text);
+      chatService.newSend(
+          id: 1234, content: _controller.text, timestamp: DateTime.now());
     }
   }
 
   @override
   void dispose() {
-    webSocket.close();
+    chatService.close();
     super.dispose();
   }
 }
