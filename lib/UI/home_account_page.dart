@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:free_chat/services/accout_service.dart';
+import 'package:free_chat/entity/enums.dart';
+import 'package:free_chat/protocol/entity/account_protocol_entity.dart';
+import 'package:free_chat/protocol/sender/account_protocol_sender.dart';
+import 'package:free_chat/protocol/sender/base_protocol_sender.dart';
 import 'package:free_chat/util/function_pool.dart';
 import 'package:free_chat/util/ui/custom_style.dart';
 import 'package:free_chat/util/ui/page_tansitions/scale_route.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'account_page.dart';
 
@@ -75,10 +79,10 @@ class HomeAccountPage extends StatelessWidget {
           actions: <Widget>[
             PopupMenuButton<int>(
               offset: Offset(12, 20),
-              onSelected: (reslut) {
+              onSelected: (reslut) async {
                 switch (reslut) {
                   case 0:
-                    showDialog<bool>(
+                    final result = await showDialog<bool>(
                         context: context,
                         builder: (context) => AlertDialog(
                               title: Text('Are you ready to logout?'),
@@ -98,16 +102,42 @@ class HomeAccountPage extends StatelessWidget {
                                   },
                                 ),
                               ],
-                            )).then((result) {
-                      if (result) {
-                        AccountService.logout().then((_) {
-                          Navigator.pushAndRemoveUntil(
-                              context,
-                              ScaleRoute(page: AccountPage()),
-                              (route) => false);
-                        });
-                      }
-                    });
+                            ));
+                    if (result) {
+                      final prefs = await SharedPreferences.getInstance();
+                      final accountStatus = FunctionPool.getAccountInfo(prefs,
+                          target: 'loginStatus');
+                      final loginAccountUsername = FunctionPool.getAccountInfo(
+                          prefs,
+                          target: 'loginAccountUsername');
+                      final loginAccountPassword = FunctionPool.getAccountInfo(
+                          prefs,
+                          target: 'loginAccountPassword');
+                      assert(accountStatus == true);
+                      IProtocolSender protocol = AccountProtocol(
+                          username: loginAccountUsername,
+                          password: loginAccountPassword);
+                      await protocol.init();
+                      AccountProtocolEntity protocolEntity =
+                          AccountProtocolEntity(
+                              head: AccountHeadEntity(
+                                code: AccountProtocolCode.logout,
+                                id: loginAccountUsername,
+                                timestamp: DateTime.now(),
+                              ),
+                              body: AccountBodyEntity(
+                                content: loginAccountPassword,
+                              ));
+                      protocol.setEntity(protocolEntity);
+                      await protocol.send();
+                      FunctionPool.addAccountInfo(prefs,
+                          target: 'loginStatus', value: false);
+                      FunctionPool.addAccountInfo(prefs,
+                          target: 'loginAccountUsername', value: '');
+                      Navigator.pushAndRemoveUntil(context,
+                          ScaleRoute(page: AccountPage()), (route) => false);
+                    }
+
                     break;
                   case 1:
                     FunctionPool.showCustomAboutDialog(context: context);

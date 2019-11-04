@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:free_chat/UI/chat_page.dart';
 import 'package:free_chat/entity/message_entity.dart';
 import 'package:free_chat/util/ui/page_tansitions/scale_rotation_route.dart';
+import 'package:free_chat/util/ui/page_tansitions/scale_route.dart';
 
 class HomeMessagesPage extends StatefulWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
@@ -22,7 +23,8 @@ class HomeMessagesPage extends StatefulWidget {
 class HomeMessagesPageState extends State<HomeMessagesPage> {
   List<MessageEntity> list = List.generate(
     20,
-    (i) => MessageEntity(alias: 'Yue', overview: 'Love', timestamp: '5:20 PM'),
+    (i) => MessageEntity(
+        username: 'yue', alias: 'Yue', overview: 'Love', timestamp: '5:20 PM'),
   );
   int x = 0;
 
@@ -34,16 +36,22 @@ class HomeMessagesPageState extends State<HomeMessagesPage> {
         list = List.generate(
           20,
           (i) => MessageEntity(
-              alias: '$x Yue', overview: 'Love', timestamp: '5:20 PM'),
+              username: '1yue1',
+              alias: '$x Yue',
+              overview: 'Love',
+              timestamp: '5:20 PM'),
         );
       });
     });
   }
 
-  enterConversation(BuildContext context, {final userId}) {
-    Navigator.of(context).push(ScaleRotateRoute(
+  enterConversation(BuildContext context, {final String username}) {
+    print('enter chat page from: ${widget.username} to: $username');
+    Navigator.of(context).push(ScaleRoute(
         page: ChatPage(
-      userId: userId,
+      id: widget.username,
+      to: username,
+      // toId: toId,
     )));
   }
 

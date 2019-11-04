@@ -1,6 +1,3 @@
-import 'package:free_chat/configuration/mysql_conf.dart';
-import 'package:get_it/get_it.dart';
-import 'package:mysql1/mysql1.dart';
 /* 
 GetIt locator;
 void setupLocator() {

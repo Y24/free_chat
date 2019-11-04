@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:free_chat/UI/profile_page.dart';
 import 'package:free_chat/entity/enums.dart';
 import 'package:free_chat/util/function_pool.dart';
-import 'package:free_chat/util/ui/page_tansitions/fade_route.dart';
 
 class HistoryEntity {
+  final id;
   final String avatarUrl;
-  final int userId;
+  final String username;
   final String content;
   final bool isOthers;
   final DateTime timestamp;
   MessageSendStatus status;
   HistoryEntity({
+    this.id,
     this.avatarUrl,
-    this.userId,
+    this.username,
     this.content,
     this.isOthers,
     this.timestamp,
@@ -21,15 +21,17 @@ class HistoryEntity {
   });
   HistoryEntity.fromJson(final Map<String, dynamic> json)
       : assert(json != null),
+        id = json['id'],
         avatarUrl = json['avatarUrl'],
-        userId = json['userId'],
+        username = json['username'],
         isOthers = json['alias'],
         content = json['content'],
         timestamp = json['timestamp'],
         status = FunctionPool.getMessageSendStatusByStr(json['status']);
   Map<String, dynamic> toJson() => {
+        'id': id,
         'avatarUrl': avatarUrl,
-        'userId': userId,
+        'username': username,
         'isOthers': isOthers,
         'content': content,
         'timestamp': timestamp,
@@ -64,6 +66,9 @@ class _OneselfHistoryItemState extends State<OneselfHistoryItem> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: <Widget>[
+        SizedBox(
+          width: 30,
+        ),
         Container(child: buildProcessIndicator(status: widget.status)),
         Flexible(
           child: Container(
@@ -73,13 +78,13 @@ class _OneselfHistoryItemState extends State<OneselfHistoryItem> {
             ),
             child: Text(widget.content,
                 style: TextStyle(fontSize: 16, color: Colors.white)),
-            padding: const EdgeInsets.all(14.0),
+            padding: const EdgeInsets.all(10.0),
           ),
         ),
         Padding(
           child:
               CircleAvatar(backgroundImage: AssetImage('res/images/logo.png')),
-          padding: EdgeInsets.only(right: 14),
+          padding: EdgeInsets.only(left: 8, right: 14),
         ),
       ],
     );
@@ -141,7 +146,7 @@ class OthersHistoryItem extends StatelessWidget {
         Padding(
           child:
               CircleAvatar(backgroundImage: AssetImage('res/images/logo.png')),
-          padding: EdgeInsets.only(left: 14),
+          padding: EdgeInsets.only(left: 14, right: 8),
         ),
         Flexible(
           child: Container(
@@ -149,17 +154,12 @@ class OthersHistoryItem extends StatelessWidget {
               borderRadius: BorderRadius.all(Radius.circular(8)),
               color: Colors.grey[200],
             ),
-            margin: EdgeInsets.only(
-              top: 14.0,
-              bottom: 14.0,
-              left: 14.0,
-              right: 70,
-            ),
             child: Text(content,
                 style: TextStyle(fontSize: 16, color: Colors.blue)),
-            padding: const EdgeInsets.all(14.0),
+            padding: const EdgeInsets.all(10.0),
           ),
         ),
+        SizedBox(width: 30),
       ],
     );
   }

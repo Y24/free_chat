@@ -1,7 +1,7 @@
-/// 
+///
 /// Powered by divyanshub024
 /// ![](https://github.com/divyanshub024/Flutter-page-route-transition)
-/// 
+///
 import 'package:flutter/material.dart';
 
 Color c = Colors.blue;
@@ -16,7 +16,7 @@ class FadeRoute extends PageRouteBuilder {
             Animation<double> secondaryAnimation,
           ) =>
               page,
-          transitionDuration: const Duration(seconds: 1),
+          transitionDuration: const Duration(milliseconds: 500),
           transitionsBuilder: (
             BuildContext context,
             Animation<double> animation,

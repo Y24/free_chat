@@ -5,8 +5,9 @@ import 'package:free_chat/UI/account_recovery.dart';
 import 'package:free_chat/UI/welcome.dart';
 import 'package:free_chat/configuration/configuration.dart';
 import 'package:free_chat/entity/enums.dart';
-import 'package:free_chat/services/accout_service.dart';
-import 'package:free_chat/services/mysql_service.dart';
+import 'package:free_chat/protocol/entity/account_protocol_entity.dart';
+import 'package:free_chat/protocol/sender/account_protocol_sender.dart';
+import 'package:free_chat/protocol/sender/base_protocol_sender.dart';
 import 'package:free_chat/util/function_pool.dart';
 import 'package:free_chat/util/ui/clip_oval_logo.dart';
 import 'package:free_chat/util/ui/custom_style.dart';
@@ -65,7 +66,9 @@ class LoginUIState extends State<LoginUI> {
   FocusNode loginPasswordFocusNode = FocusNode();
   FocusNode registerPasswordFocusNode = FocusNode();
   FocusNode registerPasswordRepeatFocusNode = FocusNode();
-  AccountService accountService = AccountService(mysqlService: MysqlService());
+  IProtocolSender accountProtocol;
+  //AccountService accountService = AccountService(mysqlService: MysqlService());
+
   @override
   Widget build(BuildContext context) {
     //final themeState = Provider.of<CustomThemeDataState>(context);
@@ -384,96 +387,114 @@ class LoginUIState extends State<LoginUI> {
                           ),
                         ));
                       });
-                      accountService
-                          .register(
+                      accountProtocol?.dispose();
+                      accountProtocol = AccountProtocol(
                         username: _registerUsername,
                         password: _registerPassword,
-                        role: Role.user,
-                      )
-                          .then(
-                        (onValue) {
-                          timer.cancel();
-                          switch (onValue) {
-                            case RegisterStatus.serverError:
-                              Scaffold.of(context)
-                                  .showSnackBar(FailtureSnackBar.newInstance(
-                                message: FunctionPool.getStringRes(
-                                  key: 'serverErrorStr',
-                                  language: language,
-                                ),
-                              ));
-                              setState(() {
-                                isRegisterProcessing = false;
-                              });
-                              break;
-                            case RegisterStatus.timeoutError:
-                              Scaffold.of(context)
-                                  .showSnackBar(FailtureSnackBar.newInstance(
-                                message: FunctionPool.getStringRes(
-                                  key: 'timeOutStr',
-                                  language: language,
-                                ),
-                              ));
-                              setState(() {
-                                isRegisterProcessing = false;
-                              });
-                              break;
-                            case RegisterStatus.InvalidUsername:
-                              Scaffold.of(context)
-                                  .showSnackBar(FailtureSnackBar.newInstance(
-                                message: FunctionPool.getStringRes(
-                                  key: 'usernameInvalidStr',
-                                  language: language,
-                                ),
-                              ));
-                              setState(() {
-                                isRegisterProcessing = false;
-                              });
-                              break;
-                            case RegisterStatus.success:
-                              Scaffold.of(context).showSnackBar(SnackBar(
-                                content: Text(
-                                  FunctionPool.getStringRes(
-                                    key: 'registerSuccessStr',
-                                    language: language,
-                                  ),
-                                  style: TextStyle(color: Colors.green),
-                                ),
-                                backgroundColor: Colors.grey[100],
-                                action: SnackBarAction(
-                                  onPressed: () {
-                                    setState(() {
-                                      _registerUsername = _registerPassword =
-                                          _registerPasswordConfirm = '';
-                                      inLoginPage = true;
-                                    });
-                                  },
-                                  label: FunctionPool.getStringRes(
-                                    key: 'loginStr',
-                                    language: language,
-                                  ),
-                                ),
-                              ));
-                              setState(() {
-                                isRegisterProcessing = false;
-                              });
-                              break;
-                            case RegisterStatus.unknownError:
-                              Scaffold.of(context)
-                                  .showSnackBar(FailtureSnackBar.newInstance(
-                                message: FunctionPool.getStringRes(
-                                  key: 'unknownErrorStr',
-                                  language: language,
-                                ),
-                              ));
-                              setState(() {
-                                isRegisterProcessing = false;
-                              });
-                              break;
-                            default:
-                          }
-                        },
                       );
+
+                      accountProtocol.init()
+                        ..then((result) {
+                          if (result != null) {
+                            AccountProtocolEntity protocolEntity =
+                                AccountProtocolEntity(
+                                    head: AccountHeadEntity(
+                                      code: AccountProtocolCode.register,
+                                      id: _registerUsername,
+                                      timestamp: DateTime.now(),
+                                    ),
+                                    body: AccountBodyEntity(
+                                      content: _registerPassword,
+                                    ));
+                            accountProtocol.setEntity(protocolEntity);
+                            accountProtocol.send().then(
+                              (onValue) {
+                                timer.cancel();
+                                switch (onValue) {
+                                  case RegisterStatus.serverError:
+                                    Scaffold.of(context).showSnackBar(
+                                        FailtureSnackBar.newInstance(
+                                      message: FunctionPool.getStringRes(
+                                        key: 'serverErrorStr',
+                                        language: language,
+                                      ),
+                                    ));
+                                    setState(() {
+                                      isRegisterProcessing = false;
+                                    });
+                                    break;
+                                  case RegisterStatus.timeoutError:
+                                    Scaffold.of(context).showSnackBar(
+                                        FailtureSnackBar.newInstance(
+                                      message: FunctionPool.getStringRes(
+                                        key: 'timeOutStr',
+                                        language: language,
+                                      ),
+                                    ));
+                                    setState(() {
+                                      isRegisterProcessing = false;
+                                    });
+                                    break;
+                                  case RegisterStatus.invalidUsername:
+                                    Scaffold.of(context).showSnackBar(
+                                        FailtureSnackBar.newInstance(
+                                      message: FunctionPool.getStringRes(
+                                        key: 'usernameInvalidStr',
+                                        language: language,
+                                      ),
+                                    ));
+                                    setState(() {
+                                      isRegisterProcessing = false;
+                                    });
+                                    break;
+                                  case RegisterStatus.success:
+                                    Scaffold.of(context).showSnackBar(SnackBar(
+                                      content: Text(
+                                        FunctionPool.getStringRes(
+                                          key: 'registerSuccessStr',
+                                          language: language,
+                                        ),
+                                        style: TextStyle(color: Colors.green),
+                                      ),
+                                      backgroundColor: Colors.grey[100],
+                                      action: SnackBarAction(
+                                        onPressed: () {
+                                          setState(() {
+                                            _registerUsername =
+                                                _registerPassword =
+                                                    _registerPasswordConfirm =
+                                                        '';
+                                            inLoginPage = true;
+                                          });
+                                        },
+                                        label: FunctionPool.getStringRes(
+                                          key: 'loginStr',
+                                          language: language,
+                                        ),
+                                      ),
+                                    ));
+                                    setState(() {
+                                      isRegisterProcessing = false;
+                                    });
+                                    break;
+                                  case RegisterStatus.unknownError:
+                                    Scaffold.of(context).showSnackBar(
+                                        FailtureSnackBar.newInstance(
+                                      message: FunctionPool.getStringRes(
+                                        key: 'unknownErrorStr',
+                                        language: language,
+                                      ),
+                                    ));
+                                    setState(() {
+                                      isRegisterProcessing = false;
+                                    });
+                                    break;
+                                  default:
+                                }
+                              },
+                            );
+                          }
+                        });
                     },
                     child: ClipOval(
                       child: Container(
@@ -745,84 +766,102 @@ class LoginUIState extends State<LoginUI> {
                           ),
                         ));
                       });
-                      accountService
-                          .login(
+                      accountProtocol?.dispose();
+                      accountProtocol = AccountProtocol(
                         username: _loginUsername,
                         password: _loginPassword,
-                      )
-                          .then(
-                        (onValue) {
-                          timer.cancel();
-                          switch (onValue) {
-                            case LoginStatus.serverError:
-                              Scaffold.of(context)
-                                  .showSnackBar(FailtureSnackBar.newInstance(
-                                      message: FunctionPool.getStringRes(
-                                key: 'serverErrorStr',
-                                language: language,
-                              )));
-                              setState(() {
-                                isLoginProcessing = false;
-                              });
-                              break;
-                            case LoginStatus.timeoutError:
-                              Scaffold.of(context)
-                                  .showSnackBar(FailtureSnackBar.newInstance(
-                                      message: FunctionPool.getStringRes(
-                                key: 'timeOutStr',
-                                language: language,
-                              )));
-                              setState(() {
-                                isLoginProcessing = false;
-                              });
-                              break;
-                            case LoginStatus.authenticationFailture:
-                              Scaffold.of(context)
-                                  .showSnackBar(FailtureSnackBar.newInstance(
-                                      message: FunctionPool.getStringRes(
-                                key: 'authenticationFailtureStr',
-                                language: language,
-                              )));
-                              setState(() {
-                                isLoginProcessing = false;
-                              });
-                              break;
-                            case LoginStatus.authenticationsuccess:
-                              SharedPreferences.getInstance().then((prefs) {
-                                FunctionPool.addAccountInfo(prefs,
-                                    target: 'loginStatus', value: true);
-                                FunctionPool.addAccountInfo(prefs,
-                                    target: 'loginAccountUsername',
-                                    value: _loginUsername);
-
-                                Navigator.of(context).pushAndRemoveUntil(
-                                    FadeRoute(
-                                        page: WelcomePage(
-                                      language: language,
-                                      username: _loginUsername,
-                                      themeData: Theme.of(context),
-                                    )),
-                                    (route) => route == null);
-                                setState(() {
-                                  isLoginProcessing = false;
-                                });
-                              });
-                              break;
-                            case LoginStatus.unknownError:
-                              Scaffold.of(context)
-                                  .showSnackBar(FailtureSnackBar.newInstance(
-                                      message: FunctionPool.getStringRes(
-                                key: 'unknownErrorStr',
-                                language: language,
-                              )));
-                              setState(() {
-                                isLoginProcessing = false;
-                              });
-                              break;
-                            default:
-                          }
-                        },
                       );
+
+                      accountProtocol.init()
+                        ..then((result) {
+                          if (result != null) {
+                            AccountProtocolEntity protocolEntity =
+                                AccountProtocolEntity(
+                                    head: AccountHeadEntity(
+                                      code: AccountProtocolCode.login,
+                                      id: _loginUsername,
+                                      timestamp: DateTime.now(),
+                                    ),
+                                    body: AccountBodyEntity(
+                                      content: _loginPassword,
+                                    ));
+                            accountProtocol.setEntity(protocolEntity);
+                            accountProtocol.send().then(
+                              (onValue) {
+                                timer.cancel();
+                                switch (onValue) {
+                                  case LoginStatus.serverError:
+                                    Scaffold.of(context).showSnackBar(
+                                        FailtureSnackBar.newInstance(
+                                            message: FunctionPool.getStringRes(
+                                      key: 'serverErrorStr',
+                                      language: language,
+                                    )));
+                                    setState(() {
+                                      isLoginProcessing = false;
+                                    });
+                                    break;
+                                  case LoginStatus.timeoutError:
+                                    Scaffold.of(context).showSnackBar(
+                                        FailtureSnackBar.newInstance(
+                                            message: FunctionPool.getStringRes(
+                                      key: 'timeOutStr',
+                                      language: language,
+                                    )));
+                                    setState(() {
+                                      isLoginProcessing = false;
+                                    });
+                                    break;
+                                  case LoginStatus.authenticationFailture:
+                                    Scaffold.of(context).showSnackBar(
+                                        FailtureSnackBar.newInstance(
+                                            message: FunctionPool.getStringRes(
+                                      key: 'authenticationFailtureStr',
+                                      language: language,
+                                    )));
+                                    setState(() {
+                                      isLoginProcessing = false;
+                                    });
+                                    break;
+                                  case LoginStatus.authenticationSuccess:
+                                    SharedPreferences.getInstance()
+                                        .then((prefs) {
+                                      FunctionPool.addAccountInfo(prefs,
+                                          target: 'loginStatus', value: true);
+                                      FunctionPool.addAccountInfo(prefs,
+                                          target: 'loginAccountUsername',
+                                          value: _loginUsername);
+
+                                      Navigator.of(context).pushAndRemoveUntil(
+                                          FadeRoute(
+                                              page: WelcomePage(
+                                            language: language,
+                                            username: _loginUsername,
+                                            themeData: Theme.of(context),
+                                          )),
+                                          (route) => route == null);
+                                      setState(() {
+                                        isLoginProcessing = false;
+                                      });
+                                    });
+                                    break;
+                                  case LoginStatus.unknownError:
+                                    Scaffold.of(context).showSnackBar(
+                                        FailtureSnackBar.newInstance(
+                                            message: FunctionPool.getStringRes(
+                                      key: 'unknownErrorStr',
+                                      language: language,
+                                    )));
+                                    setState(() {
+                                      isLoginProcessing = false;
+                                    });
+                                    break;
+                                  default:
+                                }
+                              },
+                            );
+                          }
+                        });
                     },
                     child: ClipOval(
                       child: Container(

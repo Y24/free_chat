@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:free_chat/UI/account_page.dart';
 import 'package:free_chat/UI/home_page.dart';
-import 'package:free_chat/configuration/configuration.dart';
 import 'package:free_chat/entity/enums.dart';
 import 'package:free_chat/util/function_pool.dart';
 import 'package:free_chat/util/ui/lifecycle_manager.dart';

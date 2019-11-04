@@ -6,14 +6,18 @@ import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:free_chat/entity/enums.dart';
 import 'package:free_chat/entity/history_entity.dart';
-import 'package:free_chat/entity/message_entity.dart';
-import 'package:free_chat/services/chat_service.dart';
+import 'package:free_chat/protocol/entity/chat_protocol_entity.dart';
+import 'package:free_chat/protocol/handler/chat_protocol_handler.dart';
+import 'package:free_chat/protocol/sender/chat_protocol_sender.dart';
+import 'package:free_chat/protocol/service/base_protocol_service.dart';
+import 'package:free_chat/protocol/service/chat_protocol_service.dart';
 import 'package:free_chat/util/function_pool.dart';
+import 'package:free_chat/util/ui/clip_oval_logo.dart';
 
 class ChatPage extends StatefulWidget {
-  final int userId;
-  final int toId;
-  ChatPage({@required this.userId, @required this.toId});
+  final String id;
+  final String to;
+  ChatPage({@required this.id, @required this.to});
   @override
   ChatPageState createState() => ChatPageState();
   static ChatPageState of(BuildContext context, {bool nullOk = false}) {
@@ -47,11 +51,12 @@ class ChatPageState extends State<ChatPage> {
   );
   TextEditingController _messageController;
   ScrollController _historyScrollController;
-  ChatService chatService;
+  bool isConnecting = false;
   bool isConnected = false;
   bool error = false;
   int messageId = 0;
-  Map<int, HistoryEntity> proccessingMessages = Map();
+  IProtocolService chatService;
+  Map<int, HistoryEntity> proccessingMessages = {};
   List<HistoryEntity> unreadList = [];
   List<HistoryEntity> totalList = [];
   StreamSubscription networkSubscription;
@@ -65,11 +70,25 @@ class ChatPageState extends State<ChatPage> {
         status: MessageSendStatus.processing,
       );
       proccessingMessages[messageId] = message;
-      chatService.newSend(
-        id: messageId++,
-        content: content,
-        timestamp: timestamp,
-      );
+      print('try new send: content:$content');
+      ChatProtocolEntity protocolEntity = ChatProtocolEntity(
+          head: ChatHeadEntity(
+            id: messageId++,
+            code: ChatProtocolCode.newSend,
+            timestamp: timestamp,
+            from: widget.id,
+            to: widget.to,
+            groupChatFlag: false,
+            password: '',
+          ),
+          body: ChatBodyEntity(content: content));
+      chatService.setEntity(protocolEntity);
+      if (!chatService.send()) {
+        initWebSocket();
+        setState(() {
+          message.status = MessageSendStatus.failture;
+        });
+      }
       addToHistory(message);
     }
   }
@@ -91,6 +110,105 @@ class ChatPageState extends State<ChatPage> {
     }
   }
 
+  void initWebSocket() async {
+    isConnected = false;
+    isConnecting = true;
+    chatService = ChatProtocolService(
+      protocolHandler: ChatProtocolHandler(
+        id: widget.id,
+        password: '',
+        from: widget.id,
+        to: widget.to,
+        groupChatFlag: false,
+      ),
+      protocolSender: ChatProtocolSender(
+        username: widget.id,
+        password: '',
+        from: widget.id,
+        to: widget.to,
+        groupChatFlag: false,
+      ),
+    );
+    final ws = await chatService.init();
+    print('ws: $ws');
+    isConnecting = false;
+    //ws.add('test for ws');
+    if (ws != null) {
+      print('ws!=null');
+      ws.listen((data) async {
+        try {
+          print('get data: $data');
+          final request = ChatProtocolEntity.fromJson(json.decode(data));
+          chatService.setEntity(request);
+          final handleResult = await chatService.handle(ws);
+          print(handleResult);
+          switch (handleResult.code) {
+            case ChatProtocolCode.accept:
+              //well, gt 0 means success.
+              if (handleResult.content >= 0) {
+                setState(() {
+                  print('handleResult.content: ${handleResult.content}');
+                  print(
+                      'processing messages: ${proccessingMessages.toString()}');
+                  proccessingMessages[handleResult.content].status =
+                      MessageSendStatus.success;
+                });
+                Future.delayed(Duration(seconds: 4), () {
+                  setState(() {
+                    proccessingMessages[handleResult.content].status = null;
+                  });
+                });
+              } else {
+                setState(() {
+                  proccessingMessages[-handleResult.content].status =
+                      MessageSendStatus.failture;
+                });
+              }
+              break;
+            case ChatProtocolCode.newSend:
+              print('recieve new send:${handleResult.content}');
+              switch (handleResult.content['status']) {
+                case SendStatus.success:
+                  if (_historyScrollController.offset == 0.0) {
+                    setState(() {
+                      list.insert(0, handleResult.content['entity']);
+                    });
+                  } else {
+                    setState(() {
+                      unreadList.insert(0, handleResult.content['entity']);
+                    });
+                  }
+                  break;
+                case SendStatus.serverError:
+                  break;
+                case SendStatus.reject:
+                  break;
+                default:
+                  break;
+              }
+              break;
+            case ChatProtocolCode.reSend:
+            case ChatProtocolCode.reject:
+            default:
+          }
+
+          //await handler.dispose();
+        } catch (e) {
+          print(e);
+        }
+      });
+      setState(() {
+        isConnected = true;
+        error = false;
+      });
+    } else {
+      setState(() {
+        isConnected = false;
+        error = true;
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -104,57 +222,20 @@ class ChatPageState extends State<ChatPage> {
           });
         }
       });
-    chatService = ChatService(
-        userId: widget.userId, isGroupChat: false, targetId: widget.toId)
-      ..initWebSocket().then((result) {
-        if (result) {
-          messageSubscription = chatService.stream.listen((protocolEntity) {
-            final head = protocolEntity.head;
-            final body = protocolEntity.body;
-            switch (head.code) {
-              case ChatProtocolCode.accept:
-                if (proccessingMessages.keys.contains(head.id)) {
-                  setState(() {
-                    proccessingMessages.remove(head.id).status =
-                        MessageSendStatus.success;
-                  });
-                }
-                break;
-              case ChatProtocolCode.reject:
-                if (proccessingMessages.keys.contains(head.id)) {
-                  setState(() {
-                    proccessingMessages.remove(head.id).status =
-                        MessageSendStatus.failture;
-                  });
-                }
-                break;
-              case ChatProtocolCode.reSend:
-              case ChatProtocolCode.newSend:
-                break;
-            }
-          });
-          setState(() {
-            isConnected = true;
-            error = false;
-          });
-        } else {
-          setState(() {
-            isConnected = false;
-            error = true;
-          });
-        }
-      });
+    initWebSocket();
     networkSubscription = Connectivity().onConnectivityChanged.listen((status) {
       print('New status: $status');
-      if (isConnected) chatService.close();
+      if (isConnected) chatService.dispose();
       isConnected = false;
-      if (status != ConnectivityResult.none) tryToConnect();
+      if (status != ConnectivityResult.none && !isConnecting) tryToConnect();
     });
   }
 
-  Future<bool> tryToConnect() async {
-    final reslut = await chatService.initWebSocket();
-    if (reslut)
+  Future<WebSocket> tryToConnect() async {
+    isConnecting = true;
+    final reslut = await chatService.init();
+    isConnecting = false;
+    if (reslut != null)
       setState(() {
         isConnected = true;
         error = false;
@@ -170,10 +251,12 @@ class ChatPageState extends State<ChatPage> {
 
   @override
   void dispose() {
-    _messageController.dispose();
-    _historyScrollController.dispose();
-    chatService.close();
-    networkSubscription.cancel();
+    print('call dispose chat_page:233');
+    chatService?.dispose();
+    _messageController?.dispose();
+    _historyScrollController?.dispose();
+    networkSubscription?.cancel();
+    messageSubscription?.cancel();
     super.dispose();
   }
 
@@ -195,13 +278,17 @@ class ChatPageState extends State<ChatPage> {
             Column(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
-                Text(widget.userId.toString(),
+                Text(widget.id.toString(),
                     style: TextStyle(color: Colors.white)),
-                Text('Online',
+                Text(!error && isConnected ? 'Online' : 'Offline',
                     style: TextStyle(
-                        fontSize: 14, color: Colors.lightGreenAccent)),
+                        fontSize: 14,
+                        color: !error && isConnected
+                            ? Colors.lightGreenAccent
+                            : Colors.grey)),
               ],
             ),
+            SizedBox(width: 12),
             buildWebSocketIndicator(),
           ],
         ),
@@ -232,6 +319,19 @@ class ChatPageState extends State<ChatPage> {
       body: Column(
         children: [
           buildMessageHistoryWidget(),
+          if (unreadList.isNotEmpty)
+            ClipOval(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  unreadList.length.toString(),
+                  style: const TextStyle(
+                    color: Colors.blue,
+                    fontSize: 20,
+                  ),
+                ),
+              ),
+            ),
           buildBottumMessageSendWidget(),
         ],
       ),
@@ -245,22 +345,8 @@ class ChatPageState extends State<ChatPage> {
     return Expanded(
       flex: 4,
       child: Container(
-        child:
-            /* StreamBuilder(
-            stream: isConnected ? chatService.webSocket : Stream.empty(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                if (_historyScrollController.offset == 0.0) {
-                  list.insert(
-                      0, HistoryEntity.fromJson(json.decode(snapshot.data)));
-                } else {
-                  unreadList.insert(
-                      0, HistoryEntity.fromJson(json.decode(snapshot.data)));
-                }
-              }
-
-              return */
-            ListView.separated(
+        padding: EdgeInsets.only(bottom: 14),
+        child: ListView.separated(
           controller: _historyScrollController,
           reverse: true,
           itemCount: totalList.length + 1,
@@ -309,25 +395,6 @@ class ChatPageState extends State<ChatPage> {
       alignment: Alignment.bottomLeft,
       child: Column(
         children: <Widget>[
-          if (unreadList.isNotEmpty)
-            Align(
-              alignment: Alignment.centerRight,
-              child: Material(
-                shape: CircleBorder(),
-                elevation: 8,
-                child: GestureDetector(
-                  child: Text(unreadList.length.toString()),
-                  onTap: () {
-                    print('Hi!');
-                    //list.insertAll(0, unreadList.toList());
-                    //unreadList.clear();
-                    setState(() {
-                      _historyScrollController.jumpTo(0.0);
-                    });
-                  },
-                ),
-              ),
-            ),
           Material(
             elevation: 14,
             child: Container(
@@ -352,12 +419,11 @@ class ChatPageState extends State<ChatPage> {
                           color: Colors.blue,
                         ),
                         onPressed: () {
-                          // print(_historyScrollController.offset);
-                          sendMessage(
-                            content: _messageController.text +
-                                DateTime.now().toString(),
-                            timestamp: DateTime.now(),
-                          );
+                          if (_messageController.text != '')
+                            sendMessage(
+                              content: _messageController.text,
+                              timestamp: DateTime.now(),
+                            );
                           _messageController.clear();
                         },
                       ),
@@ -389,17 +455,17 @@ class ChatPageState extends State<ChatPage> {
 
   buildWebSocketIndicator() {
     if (error)
-      return Text(
-        'Connection error',
-        style: TextStyle(color: Colors.red),
+      return Icon(
+        Icons.error,
+        color: Colors.red,
       );
     if (isConnected)
-      return Text(
-        'Connection success',
-        style: TextStyle(color: Colors.green),
+      return Icon(
+        Icons.check,
+        color: Colors.green,
       );
     return Text(
-      'Connecting ...',
+      '...',
       style: TextStyle(color: Colors.white),
     );
   }

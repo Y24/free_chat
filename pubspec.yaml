@@ -29,7 +29,7 @@ dependencies:
   intro_views_flutter:
   provider:
   shared_preferences:
-  sqflite:
+  sqflite: 1.1.7+2
   path_provider:
   get_it:
   connectivity:

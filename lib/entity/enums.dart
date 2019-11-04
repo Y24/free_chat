@@ -7,7 +7,7 @@ enum ConnectionStatus {
   failture,
 }
 enum LoginStatus {
-  authenticationsuccess,
+  authenticationSuccess,
   authenticationFailture,
   serverError,
   timeoutError,
@@ -18,9 +18,14 @@ enum Role {
   service,
   user,
 }
+enum LogoutOrCleanUpStatus {
+  success,
+  authenticationFailture,
+  serverError,
+}
 enum RegisterStatus {
   success,
-  InvalidUsername,
+  invalidUsername,
   permissionDenied,
   serverError,
   timeoutError,
@@ -36,11 +41,21 @@ enum MessageSendStatus {
   success,
   failture,
 }
-
+enum SendStatus {
+  success,
+  reject,
+  serverError,
+}
 enum ChatProtocolCode {
   //handshake,
   newSend,
   reSend,
   accept,
   reject,
+}
+enum AccountProtocolCode {
+  login,
+  logout,
+  register,
+  cleanUp,
 }
