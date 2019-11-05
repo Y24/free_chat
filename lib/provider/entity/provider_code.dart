@@ -8,3 +8,10 @@ enum AccountProviderCode {
   queryHistory,
   queryAllHistory,
 }
+enum FriendProviderCode {
+  addFriend,
+  updateFriend,
+  deleteFriend,
+  queryFriend,
+  queryAllFriend,
+}

@@ -33,6 +33,7 @@ dependencies:
   path_provider:
   get_it:
   connectivity:
+  image_picker: 0.6.1+10
 
 dev_dependencies:
   flutter_test:

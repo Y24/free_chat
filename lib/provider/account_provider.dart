@@ -79,9 +79,12 @@ class AccountProvider extends BaseProvider implements IAccountProvider {
     if (await queryHistory() != AccountEntity.emptyAccountEntity)
       return false;
     else {
-      final result = await db.insert('history', entity.content.toMap());
-      assert(result == 1, 'When add history,it should success');
-      return true;
+      try {
+        await db.insert('history', entity.content.toMap());
+        return true;
+      } catch (e) {
+        return false;
+      }
     }
   }
 
@@ -115,7 +118,8 @@ class AccountProvider extends BaseProvider implements IAccountProvider {
       return false;
     else {
       result.loginStatus = false;
-      setEntity(ProviderEntity(code: AccountProviderCode.updateHistory,content: result));
+      setEntity(ProviderEntity(
+          code: AccountProviderCode.updateHistory, content: result));
       assert(await updateHistory() == true,
           'well logout should update successful,but not actually.');
       return true;
@@ -162,8 +166,7 @@ class AccountProvider extends BaseProvider implements IAccountProvider {
 
   @override
   Future<bool> updateHistory() async {
-    final result = await db.update(
-        'history', entity.content.toMap(),
+    final result = await db.update('history', entity.content.toMap(),
         where: 'username = ?', whereArgs: [entity.content.username]);
     assert(result <= 1,
         'Well, there should not exsit more than one account with username: ${entity.content.username}');

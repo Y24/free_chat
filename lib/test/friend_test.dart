@@ -1,24 +1,28 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:free_chat/entity/enums.dart';
 import 'package:free_chat/provider/account_provider.dart';
 import 'package:free_chat/provider/base_provider.dart';
 import 'package:free_chat/provider/entity/account_entity.dart';
+import 'package:free_chat/provider/entity/friend_entity.dart';
 import 'package:free_chat/provider/entity/provider_code.dart';
 import 'package:free_chat/provider/entity/provider_entity.dart';
+import 'package:free_chat/provider/friend_provider.dart';
 
-class ProviderTest extends StatefulWidget {
+class FriendTest extends StatefulWidget {
   @override
-  _ProviderTestState createState() => _ProviderTestState();
+  _FriendTestState createState() => _FriendTestState();
 }
 
-class _ProviderTestState extends State<ProviderTest> {
+class _FriendTestState extends State<FriendTest> {
   IProvider provider;
   bool inited = false;
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
   @override
   void initState() {
     super.initState();
-    provider = AccountProvider()
+    provider = FriendProvier()
       ..init().then((result) {
         print('provider init result: $result');
         if (result) {
@@ -43,10 +47,10 @@ class _ProviderTestState extends State<ProviderTest> {
               onPressed: () async {
                 if (inited) {
                   provider.setEntity(
-                      ProviderEntity(code: AccountProviderCode.queryLogined));
+                      ProviderEntity(code: FriendProviderCode.queryAllFriend));
                   final result = await provider.provide();
                   scaffoldKey.currentState.showSnackBar(SnackBar(
-                    content: Text('logined : $result'),
+                    content: Text('query all friends : $result'),
                   ));
                 } else {
                   scaffoldKey.currentState.showSnackBar(SnackBar(
@@ -54,20 +58,20 @@ class _ProviderTestState extends State<ProviderTest> {
                   ));
                 }
               },
-              child: Text('show logined'),
+              child: Text('show all friends'),
             ),
             RaisedButton(
               onPressed: () async {
                 final username = 'yue';
                 if (inited) {
                   provider.setEntity(ProviderEntity(
-                      code: AccountProviderCode.deleteHistory,
-                      content: AccountEntity(
+                      code: FriendProviderCode.deleteFriend,
+                      content: FriendEntity(
                         username: username,
                       )));
                   final result = await provider.provide();
                   scaffoldKey.currentState.showSnackBar(SnackBar(
-                    content: Text('delete history result : $result'),
+                    content: Text('delete friend result : $result'),
                   ));
                 } else {
                   scaffoldKey.currentState.showSnackBar(SnackBar(
@@ -75,32 +79,39 @@ class _ProviderTestState extends State<ProviderTest> {
                   ));
                 }
               },
-              child: Text('delete history'),
-            ),
-            RaisedButton(
-              onPressed: () async {
-                if (inited) {
-                  provider.setEntity(
-                      ProviderEntity(code: AccountProviderCode.queryAllHistory));
-                  final result = await provider.provide();
-                  scaffoldKey.currentState.showSnackBar(SnackBar(
-                    content: Text('all history : $result'),
-                  ));
-                } else {
-                  scaffoldKey.currentState.showSnackBar(SnackBar(
-                    content: Text('Please init before.'),
-                  ));
-                }
-              },
-              child: Text('show all history'),
+              child: Text('delete friend'),
             ),
             RaisedButton(
               onPressed: () async {
                 final username = 'yue';
                 if (inited) {
                   provider.setEntity(ProviderEntity(
-                      code: AccountProviderCode.queryHistory,
-                      content: AccountEntity(
+                      code: FriendProviderCode.updateFriend,
+                      content: FriendEntity(
+                        username: username,
+                        overview:
+                            Random.secure().nextDouble().toStringAsFixed(8),
+                        alias: Random.secure().nextDouble().toStringAsFixed(8),
+                      )));
+                  final result = await provider.provide();
+                  scaffoldKey.currentState.showSnackBar(SnackBar(
+                    content: Text('update friend result : $result'),
+                  ));
+                } else {
+                  scaffoldKey.currentState.showSnackBar(SnackBar(
+                    content: Text('Please init before.'),
+                  ));
+                }
+              },
+              child: Text('update friend'),
+            ),
+            RaisedButton(
+              onPressed: () async {
+                final username = 'yue';
+                if (inited) {
+                  provider.setEntity(ProviderEntity(
+                      code: FriendProviderCode.queryFriend,
+                      content: FriendEntity(
                         username: username,
                       )));
                   final result = await provider.provide();
@@ -113,41 +124,22 @@ class _ProviderTestState extends State<ProviderTest> {
                   ));
                 }
               },
-              child: Text('Query history'),
-            ),
-            RaisedButton(
-              onPressed: () async {
-                if (inited) {
-                  provider.setEntity(
-                      ProviderEntity(code: AccountProviderCode.logout));
-                  final result = await provider.provide();
-                  scaffoldKey.currentState.showSnackBar(SnackBar(
-                    content: Text('logout result: $result'),
-                  ));
-                } else {
-                  scaffoldKey.currentState.showSnackBar(SnackBar(
-                    content: Text('Please init before.'),
-                  ));
-                }
-              },
-              child: Text('Logout'),
+              child: Text('Query friend'),
             ),
             RaisedButton(
               onPressed: () async {
                 if (inited) {
                   provider.setEntity(ProviderEntity(
-                      code: AccountProviderCode.login,
-                      content: AccountEntity(
-                        username: 'yue',
-                        password: 'cui',
-                        role: Role.user,
-                        loginStatus: true,
-                        lastLoginTimestamp: DateTime.now(),
-                        lastLogoutTimestamp: DateTime.now(),
+                      code: FriendProviderCode.addFriend,
+                      content: FriendEntity(
+                        username:
+                            Random.secure().nextDouble().toStringAsFixed(8),
+                        alias: 'love',
+                        overview: 'my love',
                       )));
                   final result = await provider.provide();
                   scaffoldKey.currentState.showSnackBar(SnackBar(
-                    content: Text('login result: $result'),
+                    content: Text('add result: $result'),
                   ));
                 } else {
                   scaffoldKey.currentState.showSnackBar(SnackBar(
@@ -155,7 +147,7 @@ class _ProviderTestState extends State<ProviderTest> {
                   ));
                 }
               },
-              child: Text('login'),
+              child: Text('add friend'),
             ),
           ],
         ),
