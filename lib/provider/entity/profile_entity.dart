@@ -6,11 +6,11 @@ import 'package:free_chat/util/ui/profile_body_list_title.dart';
 class ProfileEntity {
   static final emptyProfileEntity = ProfileEntity(username: '');
   String username;
-  List<dynamic> labels;
+  List labels;
   // likes shares notes
-  List<dynamic> lsnCount;
+  List lsnCount;
   // body list title
-  List<dynamic> infos;
+  List infos;
   ProfileEntity({this.username, this.labels, this.lsnCount, this.infos});
   ProfileEntity.fromMap(Map<String, dynamic> map)
       : assert(map != null),

@@ -22,3 +22,10 @@ enum ProfileProviderCode {
   queryProfile,
   queryAllProfile,
 }
+enum HistoryProviderCode {
+  addHistory,
+  updateHistory,
+  deleteHistory,
+  queryHistory,
+  queryAllHistory,
+}

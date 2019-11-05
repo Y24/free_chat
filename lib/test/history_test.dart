@@ -1,28 +1,29 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:free_chat/entity/enums.dart';
 import 'package:free_chat/provider/base_provider.dart';
-import 'package:free_chat/provider/entity/profile_entity.dart';
+import 'package:free_chat/provider/entity/history_entity.dart';
 import 'package:free_chat/provider/entity/provider_code.dart';
 import 'package:free_chat/provider/entity/provider_entity.dart';
-import 'package:free_chat/provider/profile_provider.dart';
-import 'package:free_chat/util/ui/profile_body_list_title.dart';
+import 'package:free_chat/provider/history_provider.dart';
+import 'package:sqflite/sqflite.dart';
 
-class ProfileTest extends StatefulWidget {
+class HistoryTest extends StatefulWidget {
   final username;
-  ProfileTest({this.username});
+  HistoryTest({this.username});
   @override
-  _ProfileTestState createState() => _ProfileTestState();
+  _HistoryTestState createState() => _HistoryTestState();
 }
 
-class _ProfileTestState extends State<ProfileTest> {
+class _HistoryTestState extends State<HistoryTest> {
   IProvider provider;
   bool inited = false;
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
   @override
   void initState() {
     super.initState();
-    provider = ProfileProvider(username: widget.username)
+    provider = HistoryProvider(username: widget.username)
       ..init().then((result) {
         print('provider init result: $result');
         if (result) {
@@ -47,10 +48,10 @@ class _ProfileTestState extends State<ProfileTest> {
               onPressed: () async {
                 if (inited) {
                   provider.setEntity(ProviderEntity(
-                      code: ProfileProviderCode.queryAllProfile));
+                      code: HistoryProviderCode.queryAllHistory));
                   final result = await provider.provide();
                   scaffoldKey.currentState.showSnackBar(SnackBar(
-                    content: Text('query all profiles : $result'),
+                    content: Text('query all historys : $result'),
                   ));
                 } else {
                   scaffoldKey.currentState.showSnackBar(SnackBar(
@@ -58,20 +59,21 @@ class _ProfileTestState extends State<ProfileTest> {
                   ));
                 }
               },
-              child: Text('show all profiles'),
+              child: Text('show all historys'),
             ),
             RaisedButton(
               onPressed: () async {
                 final username = 'yue';
                 if (inited) {
                   provider.setEntity(ProviderEntity(
-                      code: ProfileProviderCode.deleteProfile,
-                      content: ProfileEntity(
+                      code: HistoryProviderCode.deleteHistory,
+                      content: HistoryEntity(
+                        historyId: 1,
                         username: username,
                       )));
                   final result = await provider.provide();
                   scaffoldKey.currentState.showSnackBar(SnackBar(
-                    content: Text('delete profile result : $result'),
+                    content: Text('delete history result : $result'),
                   ));
                 } else {
                   scaffoldKey.currentState.showSnackBar(SnackBar(
@@ -79,49 +81,41 @@ class _ProfileTestState extends State<ProfileTest> {
                   ));
                 }
               },
-              child: Text('delete profile'),
-            ),
-            RaisedButton(
-              onPressed: () async {
-                final username = 'yue';
-                if (inited) {
-                  provider.setEntity(
-                    ProviderEntity(
-                      code: ProfileProviderCode.updateProfile,
-                      content: ProfileEntity(
-                        username: username,
-                        labels: List.generate(
-                            4,
-                            (index) => Random.secure()
-                                .nextDouble()
-                                .toStringAsFixed(4)
-                                .toString()),
-                        lsnCount: List.generate(
-                            4, (index) => Random.secure().nextInt(300)),
-                        infos: List.generate(
-                            3, (index) => ProfileBodyListTitle.index(index)),
-                      ),
-                    ),
-                  );
-                  final result = await provider.provide();
-                  scaffoldKey.currentState.showSnackBar(SnackBar(
-                    content: Text('update profile result : $result'),
-                  ));
-                } else {
-                  scaffoldKey.currentState.showSnackBar(SnackBar(
-                    content: Text('Please init before.'),
-                  ));
-                }
-              },
-              child: Text('update profile'),
+              child: Text('delete history'),
             ),
             RaisedButton(
               onPressed: () async {
                 final username = 'yue';
                 if (inited) {
                   provider.setEntity(ProviderEntity(
-                      code: ProfileProviderCode.queryProfile,
-                      content: ProfileEntity(
+                      code: HistoryProviderCode.updateHistory,
+                      content: HistoryEntity(
+                        historyId: 100,
+                        username: username,
+                        content: Random.secure().nextInt(5000).toString(),
+                        isOthers: Random.secure().nextBool(),
+                        timestamp: DateTime.now(),
+                        status: MessageSendStatus.processing,
+                      )));
+                  final result = await provider.provide();
+                  scaffoldKey.currentState.showSnackBar(SnackBar(
+                    content: Text('update history result : $result'),
+                  ));
+                } else {
+                  scaffoldKey.currentState.showSnackBar(SnackBar(
+                    content: Text('Please init before.'),
+                  ));
+                }
+              },
+              child: Text('update history'),
+            ),
+            RaisedButton(
+              onPressed: () async {
+                final username = 'yue';
+                if (inited) {
+                  provider.setEntity(ProviderEntity(
+                      code: HistoryProviderCode.queryHistory,
+                      content: HistoryEntity(
                         username: username,
                       )));
                   final result = await provider.provide();
@@ -134,29 +128,21 @@ class _ProfileTestState extends State<ProfileTest> {
                   ));
                 }
               },
-              child: Text('Query profile'),
+              child: Text('Query history'),
             ),
             RaisedButton(
               onPressed: () async {
                 if (inited) {
-                  provider.setEntity(
-                    ProviderEntity(
-                      code: ProfileProviderCode.addProfile,
-                      content: ProfileEntity(
+                  provider.setEntity(ProviderEntity(
+                      code: HistoryProviderCode.addHistory,
+                      content: HistoryEntity(
+                        historyId: Random.secure().nextInt(300),
                         username: 'yue',
-                        labels: List.generate(
-                            4,
-                            (index) => Random.secure()
-                                .nextDouble()
-                                .toStringAsFixed(4)
-                                .toString()),
-                        lsnCount: List.generate(
-                            3, (index) => Random.secure().nextInt(300)),
-                        infos: List.generate(
-                            3, (index) => ProfileBodyListTitle.index(index)),
-                      ),
-                    ),
-                  );
+                        content: Random.secure().nextInt(5000).toString(),
+                        isOthers: Random.secure().nextBool(),
+                        timestamp: DateTime.now(),
+                        status: MessageSendStatus.processing,
+                      )));
                   final result = await provider.provide();
                   scaffoldKey.currentState.showSnackBar(SnackBar(
                     content: Text('add result: $result'),
@@ -167,7 +153,7 @@ class _ProfileTestState extends State<ProfileTest> {
                   ));
                 }
               },
-              child: Text('add profile'),
+              child: Text('add history'),
             ),
           ],
         ),

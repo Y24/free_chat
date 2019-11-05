@@ -8,6 +8,8 @@ import 'package:free_chat/provider/entity/provider_entity.dart';
 import 'package:free_chat/provider/friend_provider.dart';
 
 class FriendTest extends StatefulWidget {
+  final username;
+  FriendTest({this.username});
   @override
   _FriendTestState createState() => _FriendTestState();
 }
@@ -19,7 +21,7 @@ class _FriendTestState extends State<FriendTest> {
   @override
   void initState() {
     super.initState();
-    provider = FriendProvier()
+    provider = FriendProvier(username: widget.username)
       ..init().then((result) {
         print('provider init result: $result');
         if (result) {

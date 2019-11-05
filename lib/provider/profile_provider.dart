@@ -139,7 +139,7 @@ class ProfileProvider extends BaseProvider implements IProfileProvider {
     final result = await db.delete('profile',
         where: 'username = ?', whereArgs: [entity.content.username]);
     assert(result <= 1,
-        'Well, there should not exsit more than one Pprofile with username: ${entity.content.username}');
+        'Well, there should not exsit more than one profile with username: ${entity.content.username}');
     return result == 1;
   }
 }
