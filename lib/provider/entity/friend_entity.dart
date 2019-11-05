@@ -1,9 +1,6 @@
-import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:free_chat/entity/role_string.dart';
 
 class FriendEntity {
   static final emptyFriendEntity = FriendEntity(username: '');
