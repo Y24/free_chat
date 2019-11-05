@@ -36,5 +36,5 @@ class FriendEntity {
 
   @override
   String toString() =>
-      'FriendEntity( { username: $username, alias: $alias, $overview: $overview} )';
+      'FriendEntity( { username: $username, alias: $alias, overview: $overview} )';
 }

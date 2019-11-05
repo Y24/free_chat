@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:free_chat/entity/enums.dart';
 
 class ProfilePage extends StatelessWidget {
-  final int userId;
-  ProfilePage({this.userId});
+  final String username;
+  ProfilePage({this.username});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,7 +20,7 @@ class ProfilePage extends StatelessWidget {
           ),
         ],
       ),
-      body: _ProfileUI(userId: userId),
+      body: _ProfileUI(username: username),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.message),
         onPressed: () {},
@@ -29,13 +30,30 @@ class ProfilePage extends StatelessWidget {
 }
 
 class _ProfileUI extends StatefulWidget {
-  final int userId;
-  _ProfileUI({this.userId});
+  final String username;
+  _ProfileUI({this.username});
   @override
-  __ProfileUIState createState() => __ProfileUIState();
+  _ProfileUIState createState() => _ProfileUIState();
 }
 
-class __ProfileUIState extends State<_ProfileUI> {
+const _strPool = {
+  'likes': {
+    Language.en: 'Likes',
+    Language.zh: '点赞',
+  },
+  'shares': {
+    Language.en: 'Shares',
+    Language.zh: '动态',
+  },
+  'notes': {
+    Language.en: 'Notes',
+    Language.zh: '留言',
+  },
+};
+
+class _ProfileUIState extends State<_ProfileUI> {
+  List<String> labels;
+  Map<String, String> lsnCount;
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -132,7 +150,7 @@ class __ProfileUIState extends State<_ProfileUI> {
                     height: 50.0,
                   ),
                   Text(
-                    widget.userId.toString(),
+                    widget.username.toString(),
                     style: Theme.of(context).textTheme.title,
                   ),
                   SizedBox(
@@ -160,19 +178,23 @@ class __ProfileUIState extends State<_ProfileUI> {
                       children: <Widget>[
                         ChoiceChip(
                           label: Text('Java'),
-                          selected: true,
+                          selected: false,
+                          onSelected: (selected) {},
                         ),
                         ChoiceChip(
                           label: Text('C++'),
                           selected: false,
+                          onSelected: (selected) {},
                         ),
                         ChoiceChip(
                           label: Text('Flutter'),
                           selected: true,
+                          onSelected: (selected) {},
                         ),
                         ChoiceChip(
                           label: Text('JS'),
                           selected: false,
+                          onSelected: (selected) {},
                         ),
                       ],
                     ),

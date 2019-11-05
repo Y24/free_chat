@@ -2,6 +2,7 @@ import 'package:free_chat/provider/base_provider.dart';
 import 'package:free_chat/provider/entity/friend_entity.dart';
 import 'package:free_chat/provider/entity/provider_code.dart';
 import 'package:free_chat/provider/entity/provider_entity.dart';
+import 'package:free_chat/util/sql_util.dart';
 import 'package:sqflite/sqflite.dart';
 
 abstract class IFriendProvider implements IProvider {
@@ -39,16 +40,7 @@ class FriendProvier extends BaseProvider implements IFriendProvider {
         onCreate: (db, version) async {
           print('onCreate: $ownerName/$dbName.db');
           tables.forEach((tableName, columnNames) async {
-            String sql = '''
-          create table $tableName (
-            id integer primary key autoincrement,
-          ''';
-            columnNames.forEach((columnName) {
-              sql += '$columnName text not null, ';
-            });
-            sql = sql.substring(0, sql.length - 2);
-            sql += ' )';
-            print('sql : $sql');
+            final sql = SqlUtil.getSql(tableName, columnNames);
             await db.execute(sql);
           });
         },

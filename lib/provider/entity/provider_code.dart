@@ -15,3 +15,10 @@ enum FriendProviderCode {
   queryFriend,
   queryAllFriend,
 }
+enum ProfileProviderCode {
+  addProfile,
+  updateProfile,
+  deleteProfile,
+  queryProfile,
+  queryAllProfile,
+}

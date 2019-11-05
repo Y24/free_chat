@@ -4,24 +4,24 @@ import 'package:free_chat/util/ui/page_tansitions/fade_route.dart';
 
 class ContactEntity {
   final String avatarUrl;
-  final int userId;
+  final String username;
   final String alias;
   final String overview;
   const ContactEntity({
     this.avatarUrl,
-    this.userId,
+    this.username,
     this.alias,
     this.overview,
   });
   ContactEntity.fromJson(final Map<String, String> json)
       : assert(json != null),
         avatarUrl = json['avatarUrl'],
-        userId = int.parse(json['userId']),
+        username = json['username'],
         alias = json['alias'],
         overview = json['overview'];
   Map<String, String> toJson() => {
         'avatarUrl': avatarUrl,
-        'userId': userId.toString(),
+        'username': username,
         'alias': alias,
         'overview': overview,
       };
@@ -34,7 +34,7 @@ class ContactEntity {
       subtitle: Text(overview),
       onTap: () {
         Navigator.of(context)
-            .push(FadeRoute(page: ProfilePage(userId: userId)));
+            .push(FadeRoute(page: ProfilePage(username: username)));
       },
     );
   }

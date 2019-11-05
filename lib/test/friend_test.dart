@@ -1,10 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:free_chat/entity/enums.dart';
-import 'package:free_chat/provider/account_provider.dart';
 import 'package:free_chat/provider/base_provider.dart';
-import 'package:free_chat/provider/entity/account_entity.dart';
 import 'package:free_chat/provider/entity/friend_entity.dart';
 import 'package:free_chat/provider/entity/provider_code.dart';
 import 'package:free_chat/provider/entity/provider_entity.dart';

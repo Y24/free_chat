@@ -2,6 +2,7 @@ import 'package:free_chat/provider/base_provider.dart';
 import 'package:free_chat/provider/entity/account_entity.dart';
 import 'package:free_chat/provider/entity/provider_code.dart';
 import 'package:free_chat/provider/entity/provider_entity.dart';
+import 'package:free_chat/util/sql_util.dart';
 import 'package:sqflite/sqflite.dart';
 
 abstract class IAccountProvider implements IProvider {
@@ -34,19 +35,15 @@ class AccountProvider extends BaseProvider implements IAccountProvider {
         version: 1,
         onOpen: (db) {
           print('onOpen: $ownerName/$dbName.db');
+          tables.forEach((tableName, columnNames) async {
+            final sql = SqlUtil.getSql(tableName, columnNames);
+            print('sql : $sql');
+          });
         },
         onCreate: (db, version) async {
           print('onCreate: $ownerName/$dbName.db');
           tables.forEach((tableName, columnNames) async {
-            String sql = '''
-          create table $tableName (
-            id integer primary key autoincrement,
-          ''';
-            columnNames.forEach((columnName) {
-              sql += '$columnName text not null, ';
-            });
-            sql = sql.substring(0, sql.length - 2);
-            sql += ' )';
+            final sql = SqlUtil.getSql(tableName, columnNames);
             print('sql : $sql');
             await db.execute(sql);
           });
