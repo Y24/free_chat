@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:free_chat/UI/chat_page.dart';
 import 'package:free_chat/entity/message_entity.dart';
-import 'package:free_chat/util/ui/page_tansitions/scale_rotation_route.dart';
 import 'package:free_chat/util/ui/page_tansitions/scale_route.dart';
 
 class HomeMessagesPage extends StatefulWidget {

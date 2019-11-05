@@ -4,7 +4,7 @@ import 'package:free_chat/util/function_pool.dart';
 
 class HistoryEntity {
   final id;
-  final String avatarUrl;
+  final String avatarData;
   final String username;
   final String content;
   final bool isOthers;
@@ -12,7 +12,7 @@ class HistoryEntity {
   MessageSendStatus status;
   HistoryEntity({
     this.id,
-    this.avatarUrl,
+    this.avatarData,
     this.username,
     this.content,
     this.isOthers,
@@ -22,7 +22,7 @@ class HistoryEntity {
   HistoryEntity.fromJson(final Map<String, dynamic> json)
       : assert(json != null),
         id = json['id'],
-        avatarUrl = json['avatarUrl'],
+        avatarData = json['avatarData'],
         username = json['username'],
         isOthers = json['alias'],
         content = json['content'],
@@ -30,7 +30,7 @@ class HistoryEntity {
         status = FunctionPool.getMessageSendStatusByStr(json['status']);
   Map<String, dynamic> toJson() => {
         'id': id,
-        'avatarUrl': avatarUrl,
+        'avatarData': avatarData,
         'username': username,
         'isOthers': isOthers,
         'content': content,

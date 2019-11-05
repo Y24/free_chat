@@ -12,7 +12,6 @@ import 'package:free_chat/protocol/sender/chat_protocol_sender.dart';
 import 'package:free_chat/protocol/service/base_protocol_service.dart';
 import 'package:free_chat/protocol/service/chat_protocol_service.dart';
 import 'package:free_chat/util/function_pool.dart';
-import 'package:free_chat/util/ui/clip_oval_logo.dart';
 
 class ChatPage extends StatefulWidget {
   final String id;
