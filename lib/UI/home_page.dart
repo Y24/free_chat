@@ -102,6 +102,25 @@ class _HomeUIState extends State<HomeUI> {
   AppBar _buildAppBar() {
     switch (_currentTabIndex) {
       case 0:
+        return AppBar(
+          title: Text(_currentTabIndex == 0 ? 'Messages' : 'Contacts'),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(
+                Icons.search,
+              ),
+              onPressed: () {},
+            ),
+            IconButton(
+              icon: Icon(
+                Icons.person_add,
+              ),
+              onPressed: () {
+                
+              },
+            ),
+          ],
+        );
       case 1:
         return AppBar(
           title: Text(_currentTabIndex == 0 ? 'Messages' : 'Contacts'),

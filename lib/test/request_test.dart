@@ -2,27 +2,26 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:free_chat/provider/base_provider.dart';
-import 'package:free_chat/provider/entity/profile_entity.dart';
+import 'package:free_chat/provider/entity/request_entity.dart';
 import 'package:free_chat/provider/entity/provider_code.dart';
 import 'package:free_chat/provider/entity/provider_entity.dart';
-import 'package:free_chat/provider/profile_provider.dart';
-import 'package:free_chat/util/ui/profile_body_list_title.dart';
+import 'package:free_chat/provider/request_provider.dart';
 
-class ProfileTest extends StatefulWidget {
+class RequestTest extends StatefulWidget {
   final username;
-  ProfileTest({this.username});
+  RequestTest({this.username});
   @override
-  _ProfileTestState createState() => _ProfileTestState();
+  _RequestTestState createState() => _RequestTestState();
 }
 
-class _ProfileTestState extends State<ProfileTest> {
+class _RequestTestState extends State<RequestTest> {
   IProvider provider;
   bool inited = false;
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
   @override
   void initState() {
     super.initState();
-    provider = ProfileProvider(username: widget.username)
+    provider = RequestProvier(username: widget.username)
       ..init().then((result) {
         print('provider init result: $result');
         if (result) {
@@ -47,10 +46,10 @@ class _ProfileTestState extends State<ProfileTest> {
               onPressed: () async {
                 if (inited) {
                   provider.setEntity(ProviderEntity(
-                      code: ProfileProviderCode.queryAllProfile));
+                      code: RequestProviderCode.queryAllRequest));
                   final result = await provider.provide();
                   scaffoldKey.currentState.showSnackBar(SnackBar(
-                    content: Text('query all profiles : $result'),
+                    content: Text('query all requests : $result'),
                   ));
                 } else {
                   scaffoldKey.currentState.showSnackBar(SnackBar(
@@ -58,20 +57,20 @@ class _ProfileTestState extends State<ProfileTest> {
                   ));
                 }
               },
-              child: Text('show all profiles'),
+              child: Text('show all requests'),
             ),
             RaisedButton(
               onPressed: () async {
                 final username = 'yue';
                 if (inited) {
                   provider.setEntity(ProviderEntity(
-                      code: ProfileProviderCode.deleteProfile,
-                      content: ProfileEntity(
+                      code: RequestProviderCode.deleteRequest,
+                      content: RequestEntity(
                         username: username,
                       )));
                   final result = await provider.provide();
                   scaffoldKey.currentState.showSnackBar(SnackBar(
-                    content: Text('delete profile result : $result'),
+                    content: Text('delete request result : $result'),
                   ));
                 } else {
                   scaffoldKey.currentState.showSnackBar(SnackBar(
@@ -79,44 +78,39 @@ class _ProfileTestState extends State<ProfileTest> {
                   ));
                 }
               },
-              child: Text('delete profile'),
-            ),
-            RaisedButton(
-              onPressed: () async {
-                final username = 'yue';
-                if (inited) {
-                  provider.setEntity(
-                    ProviderEntity(
-                      code: ProfileProviderCode.updateProfile,
-                      content: ProfileEntity(
-                        username: username,
-                        labels: ['Flutter','M D','Dart','WebSocket'],
-                        lsnCount: List.generate(
-                            3, (index) => Random.secure().nextInt(300)),
-                        infos: List.generate(
-                            3, (index) => ProfileBodyListTitle.index(index)),
-                      ),
-                    ),
-                  );
-                  final result = await provider.provide();
-                  scaffoldKey.currentState.showSnackBar(SnackBar(
-                    content: Text('update profile result : $result'),
-                  ));
-                } else {
-                  scaffoldKey.currentState.showSnackBar(SnackBar(
-                    content: Text('Please init before.'),
-                  ));
-                }
-              },
-              child: Text('update profile'),
+              child: Text('delete request'),
             ),
             RaisedButton(
               onPressed: () async {
                 final username = 'yue';
                 if (inited) {
                   provider.setEntity(ProviderEntity(
-                      code: ProfileProviderCode.queryProfile,
-                      content: ProfileEntity(
+                      code: RequestProviderCode.updateRequest,
+                      content: RequestEntity(
+                        username: username,
+                        overview:
+                            Random.secure().nextDouble().toStringAsFixed(8),
+                        timestamp: DateTime.now(),
+                      )));
+                  final result = await provider.provide();
+                  scaffoldKey.currentState.showSnackBar(SnackBar(
+                    content: Text('update request result : $result'),
+                  ));
+                } else {
+                  scaffoldKey.currentState.showSnackBar(SnackBar(
+                    content: Text('Please init before.'),
+                  ));
+                }
+              },
+              child: Text('update request'),
+            ),
+            RaisedButton(
+              onPressed: () async {
+                final username = 'yue';
+                if (inited) {
+                  provider.setEntity(ProviderEntity(
+                      code: RequestProviderCode.queryRequest,
+                      content: RequestEntity(
                         username: username,
                       )));
                   final result = await provider.provide();
@@ -129,29 +123,19 @@ class _ProfileTestState extends State<ProfileTest> {
                   ));
                 }
               },
-              child: Text('Query profile'),
+              child: Text('Query request'),
             ),
             RaisedButton(
               onPressed: () async {
                 if (inited) {
-                  provider.setEntity(
-                    ProviderEntity(
-                      code: ProfileProviderCode.addProfile,
-                      content: ProfileEntity(
-                        username: 'yue',
-                        labels: List.generate(
-                            4,
-                            (index) => Random.secure()
-                                .nextDouble()
-                                .toStringAsFixed(4)
-                                .toString()),
-                        lsnCount: List.generate(
-                            3, (index) => Random.secure().nextInt(300)),
-                        infos: List.generate(
-                            3, (index) => ProfileBodyListTitle.index(index)),
-                      ),
-                    ),
-                  );
+                  provider.setEntity(ProviderEntity(
+                      code: RequestProviderCode.addRequest,
+                      content: RequestEntity(
+                        username: 
+                        Random.secure().nextDouble().toStringAsFixed(8),
+                        timestamp: DateTime.now(),
+                        overview: 'my love',
+                      )));
                   final result = await provider.provide();
                   scaffoldKey.currentState.showSnackBar(SnackBar(
                     content: Text('add result: $result'),
@@ -162,7 +146,7 @@ class _ProfileTestState extends State<ProfileTest> {
                   ));
                 }
               },
-              child: Text('add profile'),
+              child: Text('add request'),
             ),
           ],
         ),

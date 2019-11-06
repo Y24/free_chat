@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:free_chat/UI/chat_page.dart';
-import 'package:free_chat/entity/message_entity.dart';
+import 'package:free_chat/provider/base_provider.dart';
+import 'package:free_chat/provider/conversation_provider.dart';
+import 'package:free_chat/provider/entity/provider_code.dart';
+import 'package:free_chat/provider/entity/provider_entity.dart';
 import 'package:free_chat/util/ui/page_tansitions/scale_route.dart';
 
 class HomeMessagesPage extends StatefulWidget {
@@ -20,44 +23,70 @@ class HomeMessagesPage extends StatefulWidget {
 }
 
 class HomeMessagesPageState extends State<HomeMessagesPage> {
-  List<MessageEntity> list = List.generate(
-    20,
-    (i) => MessageEntity(
-        username: 'yue', alias: 'Yue', overview: 'Love', timestamp: '5:20 PM'),
-  );
-  int x = 0;
+  bool fetched = false;
+  IProvider provider;
+  List list = [];
 
   Future<Null> _onRefresh() async {
-    x++;
-    await Future.delayed(Duration(seconds: 1), () {
-      print('refresh');
-      setState(() {
-        list = List.generate(
-          20,
-          (i) => MessageEntity(
-              username: '1yue1',
-              alias: '$x Yue',
-              overview: 'Love',
-              timestamp: '5:20 PM'),
-        );
-      });
-    });
+    if (fetched) {
+      try {
+        provider.setEntity(ProviderEntity(
+            code: ConversationProviderCode.queryAllConversation));
+        list = await provider.provide();
+        setState(() {
+          list.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+        });
+      } catch (e) {
+        await initProvider();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    fetched = false;
+    provider?.close();
+    super.dispose();
+    print('messages dispose');
+  }
+
+  Future initProvider() async {
+    fetched = false;
+    provider = ConversationProvider(username: widget.username);
+    final result = await provider.init();
+    print('provider init result: $result');
+    if (result) {
+      provider.setEntity(
+          ProviderEntity(code: ConversationProviderCode.queryAllConversation));
+      list = await provider.provide();
+      fetched = true;
+      setState(() {});
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    initProvider();
   }
 
   enterConversation(BuildContext context, {final String username}) {
     print('enter chat page from: ${widget.username} to: $username');
     Navigator.of(context).push(ScaleRoute(
         page: ChatPage(
-      id: widget.username,
+      from: widget.username,
       to: username,
-      // toId: toId,
     )));
   }
 
   deleteConversation(int index) {
-    setState(() {
-      list.removeAt(index);
-    });
+    var deleted = list.removeAt(index);
+    provider.setEntity(ProviderEntity(
+      code: ConversationProviderCode.deleteConversation,
+      content: deleted,
+    ));
+    provider.provide();
+    setState(() {});
   }
 
   starConversation(int index) {
@@ -68,6 +97,10 @@ class HomeMessagesPageState extends State<HomeMessagesPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (!fetched)
+      return Center(
+        child: CircularProgressIndicator(),
+      );
     return RefreshIndicator(
       child: ListView.builder(
         itemCount: list.length,
@@ -79,7 +112,7 @@ class HomeMessagesPageState extends State<HomeMessagesPage> {
       color: Colors.blue,
       backgroundColor: Colors.white,
       // notificationPredicate:,
-      semanticsLabel: 'label',
+      semanticsLabel: 'messages',
       semanticsValue: 'push_to_refresh',
     );
   }

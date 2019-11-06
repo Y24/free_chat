@@ -40,6 +40,7 @@ enum MessageSendStatus {
   processing,
   success,
   failture,
+  done,
 }
 enum SendStatus {
   success,

@@ -3,9 +3,9 @@ import 'dart:io';
 
 import 'package:free_chat/entity/backend/handle_result_entity.dart';
 import 'package:free_chat/entity/enums.dart';
-import 'package:free_chat/entity/history_entity.dart';
 import 'package:free_chat/protocol/entity/chat_protocol_entity.dart';
 import 'package:free_chat/protocol/handler/base_protocol_handler.dart';
+import 'package:free_chat/provider/entity/history_entity.dart';
 
 abstract class IChatProtocolHandler implements IProtocolHandler {
   Future<HandleResultEntity> handleNewSend();
@@ -52,12 +52,12 @@ class ChatProtocolHandler extends BaseProtocolHandler
   }
 
   Future<bool> _authenticate() async => true;
-  void _response({ChatProtocolCode code, String content}) {
+  void _response({ChatProtocolCode code, String content, DateTime timestamp}) {
     _webSocket.add(json.encode(ChatProtocolEntity(
       head: ChatHeadEntity(
         id: id,
         code: code,
-        timestamp: DateTime.now(),
+        timestamp: timestamp,
         from: from,
         to: to,
         groupChatFlag: groupChatFlag,
@@ -71,43 +71,56 @@ class ChatProtocolHandler extends BaseProtocolHandler
     HandleResultEntity resultEntity =
         HandleResultEntity(code: ChatProtocolCode.newSend);
     if (!await init()) {
-      _response(code: ChatProtocolCode.reject, content: 'server');
+      _response(
+        code: ChatProtocolCode.reject,
+        content: 'server',
+        timestamp: protocolEntity.head.timestamp,
+      );
       resultEntity.content = {
         'status': SendStatus.serverError,
         'entity': HistoryEntity(
-          id: protocolEntity.head.id,
-          username: protocolEntity.head.to,
-          content: protocolEntity.body.content,
-          isOthers: true,
-          timestamp: protocolEntity.head.timestamp,
-        ),
+            historyId: protocolEntity.head.id,
+            username: protocolEntity.head.to,
+            content: protocolEntity.body.content,
+            isOthers: true,
+            timestamp: protocolEntity.head.timestamp,
+            status: MessageSendStatus.failture),
       };
       return resultEntity;
     }
     if (await _authenticate()) {
       //TODO:
-      _response(code: ChatProtocolCode.accept, content: 'Free Chat');
+      _response(
+        code: ChatProtocolCode.accept,
+        content: 'Free Chat',
+        timestamp: protocolEntity.head.timestamp,
+      );
       resultEntity.content = {
         'status': SendStatus.success,
         'entity': HistoryEntity(
-          id: protocolEntity.head.id,
-          username: protocolEntity.head.to,
-          content: protocolEntity.body.content,
-          isOthers: true,
-          timestamp: protocolEntity.head.timestamp,
-        ),
+            historyId: protocolEntity.head.id,
+            username: protocolEntity.head.to,
+            content: protocolEntity.body.content,
+            isOthers: true,
+            timestamp: protocolEntity.head.timestamp,
+            status: MessageSendStatus.success),
       };
       return resultEntity;
     } else {
-      _response(code: ChatProtocolCode.reject, content: 'password');
+      _response(
+        code: ChatProtocolCode.reject,
+        content: 'password',
+        timestamp: protocolEntity.head.timestamp,
+      );
       resultEntity.content = {
         'status': SendStatus.reject,
         'entity': HistoryEntity(
-          id: protocolEntity.head.id,
+          historyId: protocolEntity.head.id,
           username: protocolEntity.head.to,
           content: protocolEntity.body.content,
           isOthers: true,
           timestamp: protocolEntity.head.timestamp,
+          status: MessageSendStatus.failture,
         ),
       };
       return resultEntity;
@@ -120,14 +133,14 @@ class ChatProtocolHandler extends BaseProtocolHandler
         HandleResultEntity(code: ChatProtocolCode.accept);
     if (!await init()) {
       _response(code: ChatProtocolCode.reject, content: 'server');
-      resultEntity.content = -protocolEntity.head.id;
+      resultEntity.content = null;
       return resultEntity;
     }
     if (await _authenticate()) {
-      resultEntity.content = protocolEntity.head.id;
+      resultEntity.content = protocolEntity.head.timestamp;
       return resultEntity;
     } else {
-      resultEntity.content = -protocolEntity.head.id;
+      resultEntity.content = null;
       return resultEntity;
     }
   }

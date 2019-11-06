@@ -5,18 +5,25 @@ import 'dart:io';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:free_chat/entity/enums.dart';
-import 'package:free_chat/entity/history_entity.dart';
 import 'package:free_chat/protocol/entity/chat_protocol_entity.dart';
 import 'package:free_chat/protocol/handler/chat_protocol_handler.dart';
 import 'package:free_chat/protocol/sender/chat_protocol_sender.dart';
 import 'package:free_chat/protocol/service/base_protocol_service.dart';
 import 'package:free_chat/protocol/service/chat_protocol_service.dart';
+import 'package:free_chat/provider/base_provider.dart';
+import 'package:free_chat/provider/conversation_provider.dart';
+import 'package:free_chat/provider/entity/account_entity.dart';
+import 'package:free_chat/provider/entity/conversation_entity.dart';
+import 'package:free_chat/provider/entity/history_entity.dart';
+import 'package:free_chat/provider/entity/provider_code.dart';
+import 'package:free_chat/provider/entity/provider_entity.dart';
+import 'package:free_chat/provider/history_provider.dart';
 import 'package:free_chat/util/function_pool.dart';
 
 class ChatPage extends StatefulWidget {
-  final String id;
+  final String from;
   final String to;
-  ChatPage({@required this.id, @required this.to});
+  ChatPage({@required this.from, @required this.to});
   @override
   ChatPageState createState() => ChatPageState();
   static ChatPageState of(BuildContext context, {bool nullOk = false}) {
@@ -39,15 +46,11 @@ class ChatPageState extends State<ChatPage> {
     Icons.keyboard_voice,
     Icons.attach_file,
   ];
-  List<HistoryEntity> list = List.generate(
-    20,
-    (i) => HistoryEntity(
-      content:
-          'Yue,hhhhhhhh,Yue,hhhhhhhh,Yue,hhhhhhhh,Yue,hhhhhhhh,Yue,hhhhhhhh,Yue,hhhhhhhh,Yue,hhhhhhhh,Yue,hhhhhhhh,Yue,hhhhhhhh,Yue,hhhhhhhh,Yue,hhhhhhhh,Yue,hhhhhhhh,Yue,hhhhhhhh,Yue,hhhhhhhh,',
-      isOthers: i % 2 == 0,
-      timestamp: DateTime.now(),
-    ),
-  );
+  bool fetched0 = false;
+  IProvider provider0;
+  bool fetched1 = false;
+  IProvider provider1;
+  List list = [];
   TextEditingController _messageController;
   ScrollController _historyScrollController;
   bool isConnecting = false;
@@ -55,27 +58,31 @@ class ChatPageState extends State<ChatPage> {
   bool error = false;
   int messageId = 0;
   IProtocolService chatService;
-  Map<int, HistoryEntity> proccessingMessages = {};
+  Map<String, dynamic> proccessingMessages = {};
   List<HistoryEntity> unreadList = [];
-  List<HistoryEntity> totalList = [];
+  List totalList = [];
   StreamSubscription networkSubscription;
   StreamSubscription messageSubscription;
+  Timer _hideSendDoneTimer;
   sendMessage({String content, DateTime timestamp}) {
     if (isConnected) {
       var message = HistoryEntity(
+        historyId: messageId,
+        username: widget.to,
         content: content,
-        timestamp: timestamp,
         isOthers: false,
+        timestamp: timestamp,
         status: MessageSendStatus.processing,
       );
-      proccessingMessages[messageId] = message;
+      proccessingMessages[message.timestamp.toString()] = message;
+
       print('try new send: content:$content');
       ChatProtocolEntity protocolEntity = ChatProtocolEntity(
           head: ChatHeadEntity(
             id: messageId++,
             code: ChatProtocolCode.newSend,
             timestamp: timestamp,
-            from: widget.id,
+            from: widget.from,
             to: widget.to,
             groupChatFlag: false,
             password: '',
@@ -88,12 +95,51 @@ class ChatPageState extends State<ChatPage> {
           message.status = MessageSendStatus.failture;
         });
       }
+      Timer.periodic(Duration(seconds: 5), (timer) async {
+        if (message.status == MessageSendStatus.processing) {
+          message.status = MessageSendStatus.failture;
+          provider0.setEntity(ProviderEntity(
+              code: HistoryProviderCode.updateHistory, content: message));
+          await provider0.provide();
+          setState(() {});
+        }
+        timer?.cancel();
+      });
       addToHistory(message);
     }
   }
 
-  addToHistory(HistoryEntity historyEntity) {
+  addToHistory(HistoryEntity historyEntity) async {
+    provider1.setEntity(ProviderEntity(
+        code: ConversationProviderCode.queryConversation,
+        content: ConversationEntity(username: widget.to)));
+    final result = await provider1.provide();
+    print('add to history conversation hook result: $result');
+    if (result == ConversationEntity.emptyConversationEntity) {
+      provider1.setEntity(ProviderEntity(
+          code: ConversationProviderCode.addConversation,
+          content: ConversationEntity(
+            username: widget.to,
+            alias: 'free chat',
+            overview: historyEntity.content.length > 8
+                ? historyEntity.content.substring(0, 6) + '..'
+                : historyEntity.content,
+            timestamp: DateTime.now(),
+          )));
+      provider1.provide();
+    } else {
+      result.timestamp = DateTime.now();
+      result.overview = historyEntity.content.length > 8
+          ? historyEntity.content.substring(0, 6) + '..'
+          : historyEntity.content;
+      provider1.setEntity(ProviderEntity(
+          code: ConversationProviderCode.updateConversation, content: result));
+      provider1.provide();
+    }
     if (_historyScrollController.offset == 0.0) {
+      provider0.setEntity(ProviderEntity(
+          code: HistoryProviderCode.addHistory, content: historyEntity));
+      await provider0.provide();
       setState(() {
         list.insert(0, historyEntity);
       });
@@ -101,6 +147,9 @@ class ChatPageState extends State<ChatPage> {
       setState(() {
         _historyScrollController.jumpTo(0);
       });
+      provider0.setEntity(ProviderEntity(
+          code: HistoryProviderCode.addHistory, content: historyEntity));
+      await provider0.provide();
       Future.delayed(Duration(milliseconds: 300), () {
         setState(() {
           list.insert(0, historyEntity);
@@ -114,16 +163,16 @@ class ChatPageState extends State<ChatPage> {
     isConnecting = true;
     chatService = ChatProtocolService(
       protocolHandler: ChatProtocolHandler(
-        id: widget.id,
+        id: widget.from,
         password: '',
-        from: widget.id,
+        from: widget.from,
         to: widget.to,
         groupChatFlag: false,
       ),
       protocolSender: ChatProtocolSender(
-        username: widget.id,
+        username: widget.from,
         password: '',
-        from: widget.id,
+        from: widget.from,
         to: widget.to,
         groupChatFlag: false,
       ),
@@ -143,23 +192,41 @@ class ChatPageState extends State<ChatPage> {
           print(handleResult);
           switch (handleResult.code) {
             case ChatProtocolCode.accept:
-              //well, gt 0 means success.
-              if (handleResult.content >= 0) {
+              //well, null means failture.
+              if (handleResult.content != null) {
+                provider0.setEntity(ProviderEntity(
+                    code: HistoryProviderCode.updateHistory,
+                    content: HistoryEntity(
+                      timestamp: handleResult.content,
+                      username: widget.to,
+                      status: MessageSendStatus.success,
+                    )));
+                await provider0.provide();
+                print('handleResult.content: ${handleResult.content}');
+                print('processing messages: ${proccessingMessages.toString()}');
                 setState(() {
-                  print('handleResult.content: ${handleResult.content}');
-                  print(
-                      'processing messages: ${proccessingMessages.toString()}');
-                  proccessingMessages[handleResult.content].status =
+                  proccessingMessages[handleResult.content.toString()].status =
                       MessageSendStatus.success;
                 });
-                Future.delayed(Duration(seconds: 4), () {
+                _hideSendDoneTimer =
+                    Timer.periodic(Duration(seconds: 4), (timer) {
+                  timer.cancel();
                   setState(() {
-                    proccessingMessages[handleResult.content].status = null;
+                    proccessingMessages[handleResult.content.toString()]
+                        .status = MessageSendStatus.done;
                   });
                 });
               } else {
+                provider0.setEntity(ProviderEntity(
+                    code: HistoryProviderCode.updateHistory,
+                    content: HistoryEntity(
+                      timestamp: handleResult.content,
+                      username: widget.to,
+                      status: MessageSendStatus.failture,
+                    )));
+                await provider0.provide();
                 setState(() {
-                  proccessingMessages[-handleResult.content].status =
+                  proccessingMessages[handleResult.content.toString()].status =
                       MessageSendStatus.failture;
                 });
               }
@@ -168,6 +235,10 @@ class ChatPageState extends State<ChatPage> {
               print('recieve new send:${handleResult.content}');
               switch (handleResult.content['status']) {
                 case SendStatus.success:
+                  provider0.setEntity(ProviderEntity(
+                      code: HistoryProviderCode.addHistory,
+                      content: handleResult.content['entity']));
+                  await provider0.provide();
                   if (_historyScrollController.offset == 0.0) {
                     setState(() {
                       list.insert(0, handleResult.content['entity']);
@@ -211,12 +282,37 @@ class ChatPageState extends State<ChatPage> {
   @override
   void initState() {
     super.initState();
+    fetched0 = false;
+    provider0 = HistoryProvider(username: widget.from)
+      ..init().then((result) async {
+        print('provider0 init result: $result');
+        if (result) {
+          provider0.setEntity(ProviderEntity(
+              code: HistoryProviderCode.queryAllHistory,
+              content: AccountEntity(
+                username: widget.to,
+              )));
+          list = await provider0.provide();
+          list.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+          setState(() {
+            fetched0 = true;
+          });
+        }
+      });
+    provider1 = ConversationProvider(username: widget.from)
+      ..init().then((result) async {
+        print('provider1 init result: $result');
+        if (result) {
+          fetched1 = true;
+        }
+      });
     _messageController = TextEditingController();
     _historyScrollController = ScrollController()
       ..addListener(() {
         if (unreadList.isNotEmpty && _historyScrollController.offset == 0.0) {
           setState(() {
-            list.insertAll(0, unreadList.toList());
+            list.insertAll(0, unreadList);
+            list.sort((a, b) => b.timestamp.compareTo(a.timestamp));
             unreadList.clear();
           });
         }
@@ -251,6 +347,9 @@ class ChatPageState extends State<ChatPage> {
   @override
   void dispose() {
     print('call dispose chat_page:233');
+    _hideSendDoneTimer?.cancel();
+    provider0?.close();
+    provider1?.close();
     chatService?.dispose();
     _messageController?.dispose();
     _historyScrollController?.dispose();
@@ -277,13 +376,13 @@ class ChatPageState extends State<ChatPage> {
             Column(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
-                Text(widget.id.toString(),
+                Text(widget.from.toString(),
                     style: TextStyle(color: Colors.white)),
                 Text(!error && isConnected ? 'Online' : 'Offline',
                     style: TextStyle(
                         fontSize: 14,
                         color: !error && isConnected
-                            ? Colors.lightGreenAccent
+                            ? Colors.lightGreenAccent[100]
                             : Colors.grey)),
               ],
             ),
@@ -318,19 +417,6 @@ class ChatPageState extends State<ChatPage> {
       body: Column(
         children: [
           buildMessageHistoryWidget(),
-          if (unreadList.isNotEmpty)
-            ClipOval(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  unreadList.length.toString(),
-                  style: const TextStyle(
-                    color: Colors.blue,
-                    fontSize: 20,
-                  ),
-                ),
-              ),
-            ),
           buildBottumMessageSendWidget(),
         ],
       ),
@@ -341,6 +427,10 @@ class ChatPageState extends State<ChatPage> {
     totalList.clear();
     totalList.insertAll(0, unreadList);
     totalList.insertAll(0, list);
+    if (totalList.length == 0)
+      return Expanded(
+        child: Container(),
+      );
     return Expanded(
       flex: 4,
       child: Container(
@@ -365,14 +455,15 @@ class ChatPageState extends State<ChatPage> {
                     content: totalList[index].content,
                     timestamp: totalList[index].timestamp,
                   )
-                : OneselfHistoryItem(
+                : (OneselfHistoryItem(
                     content: totalList[index].content,
                     initTimestamp: totalList[index].timestamp,
                     status: totalList[index].status,
-                  );
+                  ));
           },
           separatorBuilder: (BuildContext context, int index) {
-            if (FunctionPool.shouldShowTimeStamp(totalList, index))
+            if (FunctionPool.shouldShowTimeStamp(
+                totalList.cast<HistoryEntity>(), index))
               return Padding(
                 padding: const EdgeInsets.all(18.0),
                 child: Center(
@@ -460,8 +551,8 @@ class ChatPageState extends State<ChatPage> {
       );
     if (isConnected)
       return Icon(
-        Icons.check,
-        color: Colors.green,
+        Icons.check_circle,
+        color: Colors.lightGreenAccent[200],
       );
     return Text(
       '...',

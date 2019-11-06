@@ -21,7 +21,7 @@ class AccountProvider extends BaseProvider implements IAccountProvider {
   ProviderEntity _providerEntity;
   @override
   Future close() async {
-    await db?.close();
+     if (db?.isOpen ?? false) await db?.close();
   }
 
   @override
@@ -80,6 +80,7 @@ class AccountProvider extends BaseProvider implements IAccountProvider {
         await db.insert('history', entity.content.toMap());
         return true;
       } catch (e) {
+        print('error while add account history: $e');
         return false;
       }
     }
@@ -100,10 +101,13 @@ class AccountProvider extends BaseProvider implements IAccountProvider {
     if (result != AccountEntity.emptyAccountEntity)
       return false;
     else {
-      if (await queryHistory() == AccountEntity.emptyAccountEntity)
+      if (await queryHistory() == AccountEntity.emptyAccountEntity) {
+        print('add');
         addHistory();
-      else
+      } else {
+        print('update');
         updateHistory();
+      }
       return true;
     }
   }
@@ -111,6 +115,7 @@ class AccountProvider extends BaseProvider implements IAccountProvider {
   @override
   Future<bool> logout() async {
     final result = await queryLogined();
+    print(result.toMap().toString());
     if (result == AccountEntity.emptyAccountEntity)
       return false;
     else {
@@ -125,40 +130,57 @@ class AccountProvider extends BaseProvider implements IAccountProvider {
 
   @override
   Future<List<AccountEntity>> queryAllHistory() async {
-    final result = await db.query(
-      'history',
-      columns: tables['history'],
-    );
-    if (result.isEmpty)
+    try {
+      final result = await db.query(
+        'history',
+        columns: tables['history'],
+      );
+      if (result.isEmpty)
+        return [];
+      else
+        return result.map((r) => AccountEntity.fromMap(r)).toList();
+    } catch (e) {
+      print('error while querying all history: $e');
       return [];
-    else
-      return result.map((r) => AccountEntity.fromMap(r)).toList();
+    }
   }
 
   @override
   Future<AccountEntity> queryHistory() async {
-    final result = await db.query('history',
-        columns: tables['history'],
-        where: 'username = ?',
-        whereArgs: [entity.content.username]);
-    assert(result.length <= 1,
-        'Well, there should not exsit more than one account with username: ${entity.content.username}');
-    if (result.isEmpty)
+    try {
+      final result = await db.query('history',
+          columns: tables['history'],
+          where: 'username = ?',
+          whereArgs: [entity.content.username]);
+      assert(result.length <= 1,
+          'Well, there should not exsit more than one account with username: ${entity.content.username}');
+      if (result.isEmpty)
+        return AccountEntity.emptyAccountEntity;
+      else
+        return AccountEntity.fromMap(result[0]);
+    } catch (e) {
+      print('error while querying hitory: $e');
       return AccountEntity.emptyAccountEntity;
-    else
-      return AccountEntity.fromMap(result[0]);
+    }
   }
 
   @override
   Future<AccountEntity> queryLogined() async {
-    final result = await db.query('history',
-        columns: tables['history'], where: 'loginStatus = 1');
-    assert(result.length <= 1,
-        'Well, there should not exsit more than one logined account');
-    if (result.isEmpty)
+    try {
+      final result = await db.query('history',
+          columns: tables['history'],
+          where: 'loginStatus = ?',
+          whereArgs: ['1']);
+      assert(result.length <= 1,
+          'Well, there should not exsit more than one logined account');
+      if (result.isEmpty)
+        return AccountEntity.emptyAccountEntity;
+      else
+        return AccountEntity.fromMap(result[0]);
+    } catch (e) {
+      print('error while query logined:$e');
       return AccountEntity.emptyAccountEntity;
-    else
-      return AccountEntity.fromMap(result[0]);
+    }
   }
 
   @override

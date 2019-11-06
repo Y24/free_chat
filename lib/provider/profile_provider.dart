@@ -20,7 +20,7 @@ class ProfileProvider extends BaseProvider implements IProfileProvider {
 
   @override
   Future close() async {
-    await db?.close();
+     if (db?.isOpen ?? false) await db?.close();
   }
 
   @override

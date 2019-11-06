@@ -15,7 +15,7 @@ class HistoryEntity {
   HistoryEntity({
     this.historyId,
     //  this.avatarData,
-    this.username,
+    @required this.username,
     this.content,
     this.isOthers,
     this.timestamp,
@@ -52,6 +52,138 @@ class HistoryEntity {
   }
 
   @override
-  String toString() =>
-      'HistoryEntity( ${toMap().toString()} )';
+  String toString() => 'HistoryEntity( ${toMap().toString()} )';
+}
+
+class OneselfHistoryItem extends StatefulWidget {
+  const OneselfHistoryItem({
+    Key key,
+    @required this.content,
+    @required this.initTimestamp,
+    this.status,
+  }) : super(key: key);
+  final DateTime initTimestamp;
+  final String content;
+  final MessageSendStatus status;
+  @override
+  _OneselfHistoryItemState createState() => _OneselfHistoryItemState();
+}
+
+class _OneselfHistoryItemState extends State<OneselfHistoryItem> {
+  DateTime timestamp;
+  @override
+  void initState() {
+    super.initState();
+    timestamp = widget.initTimestamp;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: <Widget>[
+        SizedBox(
+          width: 30,
+        ),
+        Container(child: buildProcessIndicator(status: widget.status)),
+        Flexible(
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+              color: Colors.blue,
+            ),
+            child: Text(widget.content,
+                style: TextStyle(fontSize: 16, color: Colors.white)),
+            padding: const EdgeInsets.all(10.0),
+          ),
+        ),
+        Padding(
+          child:
+              CircleAvatar(backgroundImage: AssetImage('res/images/logo.png')),
+          padding: EdgeInsets.only(left: 8, right: 14),
+        ),
+      ],
+    );
+  }
+
+  buildProcessIndicator({MessageSendStatus status}) {
+    final processing = Padding(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(
+            strokeWidth: 2.0,
+          )),
+    );
+    final failture = GestureDetector(
+      child: Padding(
+        padding: const EdgeInsets.only(right: 8.0),
+        child: Icon(
+          Icons.info,
+          color: Colors.red,
+        ),
+      ),
+      onTap: () {
+        print('Tapped');
+      },
+    );
+    final success = Padding(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: Icon(
+        Icons.check_box,
+        color: Colors.green,
+      ),
+    );
+    switch (status) {
+      case MessageSendStatus.processing:
+        if (timestamp.difference(DateTime.now()).abs().inSeconds < 4)
+          return processing;
+        return failture;
+      case MessageSendStatus.success:
+        if (timestamp.difference(DateTime.now()).abs().inSeconds < 20)
+          return success;
+        return null;
+      case MessageSendStatus.failture:
+        return failture;
+      default:
+        return null;
+    }
+  }
+}
+
+class OthersHistoryItem extends StatelessWidget {
+  const OthersHistoryItem({
+    Key key,
+    @required this.content,
+    @required this.timestamp,
+  }) : super(key: key);
+  final DateTime timestamp;
+  final String content;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: <Widget>[
+        Padding(
+          child:
+              CircleAvatar(backgroundImage: AssetImage('res/images/logo.png')),
+          padding: EdgeInsets.only(left: 14, right: 8),
+        ),
+        Flexible(
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+              color: Colors.grey[200],
+            ),
+            child: Text(content,
+                style: TextStyle(fontSize: 16, color: Colors.blue)),
+            padding: const EdgeInsets.all(10.0),
+          ),
+        ),
+        SizedBox(width: 30),
+      ],
+    );
+  }
 }

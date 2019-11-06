@@ -89,8 +89,8 @@ class _FriendTestState extends State<FriendTest> {
                       content: FriendEntity(
                         username: username,
                         overview:
-                            Random.secure().nextDouble().toStringAsFixed(8),
-                        alias: Random.secure().nextDouble().toStringAsFixed(8),
+                            'Life is simple.',
+                        alias: 'Y_Y',
                       )));
                   final result = await provider.provide();
                   scaffoldKey.currentState.showSnackBar(SnackBar(
@@ -131,8 +131,7 @@ class _FriendTestState extends State<FriendTest> {
                   provider.setEntity(ProviderEntity(
                       code: FriendProviderCode.addFriend,
                       content: FriendEntity(
-                        username:
-                            Random.secure().nextDouble().toStringAsFixed(8),
+                        username:'yue',
                         alias: 'love',
                         overview: 'my love',
                       )));

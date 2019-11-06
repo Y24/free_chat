@@ -29,3 +29,17 @@ enum HistoryProviderCode {
   queryHistory,
   queryAllHistory,
 }
+enum ConversationProviderCode {
+  addConversation,
+  updateConversation,
+  deleteConversation,
+  queryConversation,
+  queryAllConversation,
+}
+enum RequestProviderCode {
+  addRequest,
+  updateRequest,
+  deleteRequest,
+  queryRequest,
+  queryAllRequest,
+}

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:free_chat/configuration/configuration.dart';
 import 'package:free_chat/entity/enums.dart';
-import 'package:free_chat/entity/history_entity.dart';
+import 'package:free_chat/provider/entity/history_entity.dart';
 import 'package:free_chat/util/ui/clip_oval_logo.dart';
 import 'package:free_chat/util/ui/custom_style.dart';
 import 'package:provider/provider.dart';
@@ -155,6 +155,7 @@ abstract class FunctionPool {
     'processing': MessageSendStatus.processing,
     'failture': MessageSendStatus.failture,
     'success': MessageSendStatus.success,
+    'done': MessageSendStatus.done,
   };
   static MessageSendStatus getMessageSendStatusByStr(String s) => _strToMSS[s];
   static String getStrByMessageSendStatus(MessageSendStatus status) =>

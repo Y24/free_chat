@@ -1,35 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:free_chat/UI/home_messages_page.dart';
 import 'package:free_chat/util/ui/slide_item.dart';
 
-class MessageEntity {
-  final String avatarUrl;
+class ConversationEntity {
+  static final emptyConversationEntity = ConversationEntity(username: '');
   final String username;
-  final String alias;
-  final String overview;
-  final String timestamp;
-  const MessageEntity({
-    this.avatarUrl,
+  //Image avatar;
+  String alias;
+  String overview;
+  DateTime timestamp;
+  ConversationEntity({
+    //this.avatar,
+    @required
     this.username,
     this.alias,
     this.overview,
     this.timestamp,
   });
-  MessageEntity.fromJson(final Map<String, dynamic> json)
-      : assert(json != null),
-        avatarUrl = json['avatarUrl'],
-        username = json['username'],
-        alias = json['alias'],
-        overview = json['overview'],
-        timestamp = json['timestamp'];
-  Map<String, dynamic> toJson() => {
-        'avatarUrl': avatarUrl,
+  ConversationEntity.fromMap(Map<String, dynamic> map)
+      : username = map['username'],
+        // avatar=Image.memory(base64.decode(map['avatar'])),
+        alias = map['alias'],
+        overview = map['overview'],
+        timestamp = DateTime.parse(map['timestamp']);
+  Map<String, dynamic> toMap() => <String, dynamic>{
         'username': username,
         'alias': alias,
         'overview': overview,
-        'timestamp': timestamp,
+        'timestamp': timestamp.toString(),
       };
-  SlideItem toSlideItem(BuildContext context, final int index) {
+   SlideItem toSlideItem(BuildContext context, final int index) {
     return SlideItem(
         child: toListTile(context),
         onTap: () {
@@ -63,7 +64,19 @@ class MessageEntity {
       ),
       title: Text(alias),
       subtitle: Text(overview),
-      trailing: Text(timestamp),
+      trailing: Text(timestamp.toString().substring(5,16)),
     );
   }
+  @override
+  int get hashCode => hashValues(username, alias);
+  @override
+  bool operator ==(dynamic other) {
+    if (identical(this, other)) return true;
+    if (other.runtimeType != runtimeType) return false;
+    final ConversationEntity typedOther = other;
+    return username == typedOther.username;
+  }
+
+  @override
+  String toString() => 'ConversationEntity( ${toMap().toString()} )';
 }

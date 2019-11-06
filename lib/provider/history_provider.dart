@@ -2,6 +2,7 @@ import 'package:free_chat/provider/base_provider.dart';
 import 'package:free_chat/provider/entity/history_entity.dart';
 import 'package:free_chat/provider/entity/provider_code.dart';
 import 'package:free_chat/provider/entity/provider_entity.dart';
+import 'package:free_chat/util/function_pool.dart';
 import 'package:free_chat/util/sql_util.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -20,7 +21,7 @@ class HistoryProvider extends BaseProvider implements IHistoryProvider {
 
   @override
   Future close() async {
-    await db?.close();
+    if (db?.isOpen ?? false) await db?.close();
   }
 
   @override
@@ -87,7 +88,7 @@ class HistoryProvider extends BaseProvider implements IHistoryProvider {
           'content',
           'isOthers',
           'timestamp',
-          'status'
+          'status',
         ],
       };
   @override
@@ -117,18 +118,36 @@ class HistoryProvider extends BaseProvider implements IHistoryProvider {
 
   @override
   Future updateHistory() async {
-    final result = await db.update('history', entity.content.toMap(),
-        where: 'historyId = ? AND username = ? ',
-        whereArgs: [entity.content.historyId, entity.content.username]);
-    assert(result <= 1,
-        'Well, there should not exsit more than one history with id : ${entity.content.historyId}, username: ${entity.content.username}');
-    return result == 1;
+    HistoryEntity historyEntity = entity.content;
+    final timestamp = historyEntity.timestamp;
+    final status = historyEntity.status;
+    final username = historyEntity.username;
+    try {
+      var result = await db.query('history',
+          columns: tables['history'],
+          where: 'username =? AND timestamp = ?',
+          whereArgs: [username, timestamp.toString()]);
+      assert(result.length == 1,
+          'Well, there should exist exact one history with username : ${historyEntity.username}, timestamp: ${historyEntity.timestamp}');
+      final re = await db.update(
+          'history',
+          {
+            'timestamp': DateTime.now().toString(),
+            'status': FunctionPool.getStrByMessageSendStatus(status),
+          },
+          where: 'username =? AND timestamp = ?',
+          whereArgs: [username, timestamp.toString()]);
+      return re == 1;
+    } catch (e) {
+      print('error while update history: $e');
+      return false;
+    }
   }
 
   @override
   Future addHistory() async {
     if ((await queryHistory() as List)
-        .any((r) => r.historyId == entity.content.historyId))
+        .any((r) => r.timestamp == entity.content.timestamp))
       return false;
     else {
       try {

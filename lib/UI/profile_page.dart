@@ -1,9 +1,22 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:free_chat/UI/chat_page.dart';
 import 'package:free_chat/entity/enums.dart';
+import 'package:free_chat/provider/base_provider.dart';
+import 'package:free_chat/provider/entity/profile_entity.dart';
+import 'package:free_chat/provider/entity/provider_code.dart';
+import 'package:free_chat/provider/entity/provider_entity.dart';
+import 'package:free_chat/provider/profile_provider.dart';
+import 'package:free_chat/util/ui/custom_style.dart';
+import 'package:free_chat/util/ui/page_tansitions/slide_route.dart';
+import 'package:provider/provider.dart';
 
 class ProfilePage extends StatelessWidget {
   final String username;
-  ProfilePage({this.username});
+  final String hostUsername;
+  ProfilePage({@required this.hostUsername, @required this.username});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,18 +33,25 @@ class ProfilePage extends StatelessWidget {
           ),
         ],
       ),
-      body: _ProfileUI(username: username),
+      body: _ProfileUI(hostUsername: hostUsername, username: username),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.message),
-        onPressed: () {},
+        onPressed: () async {
+          Navigator.of(context).push(SlideRightRoute(
+              page: ChatPage(
+            from: hostUsername,
+            to: username,
+          )));
+        },
       ),
     );
   }
 }
 
 class _ProfileUI extends StatefulWidget {
+  final String hostUsername;
   final String username;
-  _ProfileUI({this.username});
+  _ProfileUI({@required this.hostUsername, @required this.username});
   @override
   _ProfileUIState createState() => _ProfileUIState();
 }
@@ -52,8 +72,38 @@ const _strPool = {
 };
 
 class _ProfileUIState extends State<_ProfileUI> {
-  List<String> labels;
-  Map<String, String> lsnCount;
+  bool fetched = false;
+  bool isFetching = false;
+  IProvider provider;
+  ProfileEntity _profileEntity;
+  Map<String, bool> chips = {};
+  @override
+  void initState() {
+    super.initState();
+    fetched = false;
+    isFetching = true;
+    provider = ProfileProvider(username: widget.hostUsername)
+      ..init().then((result) async {
+        print('provider init result: $result');
+        if (result) {
+          provider.setEntity(ProviderEntity(
+              code: ProfileProviderCode.queryProfile,
+              content: ProfileEntity(username: widget.username)));
+          _profileEntity = await provider.provide();
+          setState(() {
+            fetched = true;
+            isFetching = false;
+          });
+        }
+      });
+  }
+
+  @override
+  void dispose() {
+    provider?.close();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -91,6 +141,7 @@ class _ProfileUIState extends State<_ProfileUI> {
   }
 
   Container _buildBody(BuildContext context) {
+    if (!fetched) return Container();
     return Container(
       child: Material(
         elevation: 5.0,
@@ -100,36 +151,21 @@ class _ProfileUIState extends State<_ProfileUI> {
             indent: 20,
             endIndent: 20,
           ),
-          itemCount: 10,
-          itemBuilder: (BuildContext context, int index) => ListTile(
-            leading: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Icon(
-                Icons.email,
-                color: Colors.blue,
-              ),
-            ),
-            title: Padding(
-              padding: const EdgeInsets.only(
-                top: 8.0,
-                left: 8.0,
-              ),
-              child: Text('Email'),
-            ),
-            subtitle: Padding(
-              padding: const EdgeInsets.only(
-                top: 8.0,
-                left: 8.0,
-              ),
-              child: Text('githuby24@gmail.com'),
-            ),
-          ),
+          itemCount: _profileEntity.infos.length,
+          itemBuilder: (BuildContext context, int index) =>
+              _profileEntity.infos[index].toListItem(context),
         ),
       ),
     );
   }
 
   Container _buildHeader(BuildContext context) {
+    final language = Provider.of<LanguageState>(context).language;
+    if (!fetched) return Container();
+    print('_profileEntity.labels:${_profileEntity.labels}');
+    _profileEntity.labels.forEach((s) {
+      chips[s] = Random.secure().nextBool();
+    });
     return Container(
       margin: EdgeInsets.only(
           top: MediaQuery.of(context).size.height * 2 / 7 - 170),
@@ -137,7 +173,7 @@ class _ProfileUIState extends State<_ProfileUI> {
       child: Stack(
         children: <Widget>[
           Container(
-            padding: EdgeInsets.only(
+            padding: const EdgeInsets.only(
                 top: 40.0, left: 40.0, right: 40.0, bottom: 10.0),
             child: Material(
               shape: RoundedRectangleBorder(
@@ -146,14 +182,14 @@ class _ProfileUIState extends State<_ProfileUI> {
               color: Colors.white,
               child: Column(
                 children: <Widget>[
-                  SizedBox(
+                  const SizedBox(
                     height: 50.0,
                   ),
                   Text(
                     widget.username.toString(),
                     style: Theme.of(context).textTheme.title,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 5.0,
                   ),
                   ChipTheme(
@@ -175,28 +211,17 @@ class _ProfileUIState extends State<_ProfileUI> {
                     child: Wrap(
                       spacing: 8.0,
                       runSpacing: 10.0,
-                      children: <Widget>[
-                        ChoiceChip(
-                          label: Text('Java'),
-                          selected: false,
-                          onSelected: (selected) {},
-                        ),
-                        ChoiceChip(
-                          label: Text('C++'),
-                          selected: false,
-                          onSelected: (selected) {},
-                        ),
-                        ChoiceChip(
-                          label: Text('Flutter'),
-                          selected: true,
-                          onSelected: (selected) {},
-                        ),
-                        ChoiceChip(
-                          label: Text('JS'),
-                          selected: false,
-                          onSelected: (selected) {},
-                        ),
-                      ],
+                      children: _profileEntity.labels
+                          .map<Widget>((text) => ChoiceChip(
+                                label: Text(text),
+                                selected: chips[text],
+                                onSelected: (selected) {
+                                  setState(() {
+                                    chips[text] = selected;
+                                  });
+                                },
+                              ))
+                          .toList(),
                     ),
                   ),
                   Container(
@@ -204,47 +229,23 @@ class _ProfileUIState extends State<_ProfileUI> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        Expanded(
-                          child: ListTile(
-                            onTap: () {
-                              print('302');
-                            },
-                            title: Text(
-                              "Likes",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            subtitle: Text("302".toUpperCase(),
+                        for (int i = 0; i < _profileEntity.lsnCount.length; i++)
+                          Expanded(
+                            child: ListTile(
+                              onTap: () {
+                                print('302');
+                              },
+                              title: Text(
+                                _strPool.values.toList()[i][language],
                                 textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 12.0)),
-                          ),
-                        ),
-                        Expanded(
-                          child: ListTile(
-                            onTap: () {},
-                            title: Text(
-                              "Shares",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              subtitle: Text(
+                                  _profileEntity.lsnCount[i].toString(),
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 12.0)),
                             ),
-                            subtitle: Text("10.3K".toUpperCase(),
-                                textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 12.0)),
-                          ),
-                        ),
-                        Expanded(
-                          child: ListTile(
-                            onTap: () {},
-                            title: Text(
-                              "Notes",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            subtitle: Text("120".toUpperCase(),
-                                textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 12.0)),
-                          ),
-                        ),
+                          )
                       ],
                     ),
                   )

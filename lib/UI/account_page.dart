@@ -8,6 +8,11 @@ import 'package:free_chat/entity/enums.dart';
 import 'package:free_chat/protocol/entity/account_protocol_entity.dart';
 import 'package:free_chat/protocol/sender/account_protocol_sender.dart';
 import 'package:free_chat/protocol/sender/base_protocol_sender.dart';
+import 'package:free_chat/provider/account_provider.dart';
+import 'package:free_chat/provider/base_provider.dart';
+import 'package:free_chat/provider/entity/account_entity.dart';
+import 'package:free_chat/provider/entity/provider_code.dart';
+import 'package:free_chat/provider/entity/provider_entity.dart';
 import 'package:free_chat/util/function_pool.dart';
 import 'package:free_chat/util/ui/clip_oval_logo.dart';
 import 'package:free_chat/util/ui/custom_style.dart';
@@ -53,6 +58,8 @@ class LoginUIState extends State<LoginUI> {
   // not a GlobalKey<MyCustomFormState>.
   final loginFormKey = GlobalKey<FormState>();
   final registerFormKey = GlobalKey<FormState>();
+  IProvider provider;
+  bool providerInited = false;
   String _loginUsername = '', _loginPassword = '';
   String _registerUsername = '',
       _registerPassword = '',
@@ -68,9 +75,29 @@ class LoginUIState extends State<LoginUI> {
   FocusNode registerPasswordRepeatFocusNode = FocusNode();
   IProtocolSender accountProtocol;
   //AccountService accountService = AccountService(mysqlService: MysqlService());
+  @override
+  void initState() {
+    super.initState();
+    providerInited = false;
+    provider = AccountProvider()
+      ..init().then((result) async {
+        print('provider init result: $result');
+        setState(() {
+          providerInited = result;
+        });
+      });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    provider?.close();
+    accountProtocol?.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (!providerInited) return Center(child: CircularProgressIndicator());
     //final themeState = Provider.of<CustomThemeDataState>(context);
     final languageState = Provider.of<LanguageState>(context);
     return Stack(
@@ -787,8 +814,9 @@ class LoginUIState extends State<LoginUI> {
                                     ));
                             accountProtocol.setEntity(protocolEntity);
                             accountProtocol.send().then(
-                              (onValue) {
+                              (onValue) async {
                                 timer.cancel();
+
                                 switch (onValue) {
                                   case LoginStatus.serverError:
                                     Scaffold.of(context).showSnackBar(
@@ -824,26 +852,28 @@ class LoginUIState extends State<LoginUI> {
                                     });
                                     break;
                                   case LoginStatus.authenticationSuccess:
-                                    SharedPreferences.getInstance()
-                                        .then((prefs) {
-                                      FunctionPool.addAccountInfo(prefs,
-                                          target: 'loginStatus', value: true);
-                                      FunctionPool.addAccountInfo(prefs,
-                                          target: 'loginAccountUsername',
-                                          value: _loginUsername);
-
-                                      Navigator.of(context).pushAndRemoveUntil(
-                                          FadeRoute(
-                                              page: WelcomePage(
-                                            language: language,
-                                            username: _loginUsername,
-                                            themeData: Theme.of(context),
-                                          )),
-                                          (route) => route == null);
-                                      setState(() {
-                                        isLoginProcessing = false;
-                                      });
-                                    });
+                                    final accountEntity = AccountEntity(
+                                      username: _loginUsername,
+                                      password: _loginPassword,
+                                      role: Role.user,
+                                      loginStatus: true,
+                                      lastLoginTimestamp: DateTime.now(),
+                                      lastLogoutTimestamp: DateTime.now(),
+                                    );
+                                    print(accountEntity.toMap().toString());
+                                    provider.setEntity(ProviderEntity(
+                                        code: AccountProviderCode.login,
+                                        content: accountEntity));
+                                    final result = await provider.provide();
+                                    print('r24esult: $result');
+                                    Navigator.of(context).pushAndRemoveUntil(
+                                        FadeRoute(
+                                            page: WelcomePage(
+                                          language: language,
+                                          username: _loginUsername,
+                                          themeData: Theme.of(context),
+                                        )),
+                                        (route) => route == null);
                                     break;
                                   case LoginStatus.unknownError:
                                     Scaffold.of(context).showSnackBar(

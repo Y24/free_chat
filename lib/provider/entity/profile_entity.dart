@@ -5,6 +5,7 @@ import 'package:free_chat/util/ui/profile_body_list_title.dart';
 
 class ProfileEntity {
   static final emptyProfileEntity = ProfileEntity(username: '');
+  @required
   String username;
   List labels;
   // likes shares notes

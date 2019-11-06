@@ -3,11 +3,14 @@ import 'package:free_chat/entity/enums.dart';
 import 'package:free_chat/protocol/entity/account_protocol_entity.dart';
 import 'package:free_chat/protocol/sender/account_protocol_sender.dart';
 import 'package:free_chat/protocol/sender/base_protocol_sender.dart';
+import 'package:free_chat/provider/account_provider.dart';
+import 'package:free_chat/provider/base_provider.dart';
+import 'package:free_chat/provider/entity/provider_code.dart';
+import 'package:free_chat/provider/entity/provider_entity.dart';
 import 'package:free_chat/util/function_pool.dart';
 import 'package:free_chat/util/ui/custom_style.dart';
 import 'package:free_chat/util/ui/page_tansitions/scale_route.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'account_page.dart';
 
@@ -104,16 +107,13 @@ class HomeAccountPage extends StatelessWidget {
                               ],
                             ));
                     if (result) {
-                      final prefs = await SharedPreferences.getInstance();
-                      final accountStatus = FunctionPool.getAccountInfo(prefs,
-                          target: 'loginStatus');
-                      final loginAccountUsername = FunctionPool.getAccountInfo(
-                          prefs,
-                          target: 'loginAccountUsername');
-                      final loginAccountPassword = FunctionPool.getAccountInfo(
-                          prefs,
-                          target: 'loginAccountPassword');
-                      assert(accountStatus == true);
+                      IProvider provider = AccountProvider();
+                      await provider.init();
+                      provider.setEntity(ProviderEntity(
+                          code: AccountProviderCode.queryLogined));
+                      final result = await provider.provide();
+                      final loginAccountUsername = result.username;
+                      final loginAccountPassword = result.password;
                       IProtocolSender protocol = AccountProtocol(
                           username: loginAccountUsername,
                           password: loginAccountPassword);
@@ -130,10 +130,9 @@ class HomeAccountPage extends StatelessWidget {
                               ));
                       protocol.setEntity(protocolEntity);
                       await protocol.send();
-                      FunctionPool.addAccountInfo(prefs,
-                          target: 'loginStatus', value: false);
-                      FunctionPool.addAccountInfo(prefs,
-                          target: 'loginAccountUsername', value: '');
+                      provider.setEntity(
+                          ProviderEntity(code: AccountProviderCode.logout));
+                      await provider.provide();
                       Navigator.pushAndRemoveUntil(context,
                           ScaleRoute(page: AccountPage()), (route) => false);
                     }

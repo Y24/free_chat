@@ -19,7 +19,7 @@ class FriendProvier extends BaseProvider implements IFriendProvider {
   FriendProvier({this.username});
   @override
   Future close() async {
-    await db?.close();
+     if (db?.isOpen ?? false) await db?.close();
   }
 
   @override

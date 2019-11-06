@@ -1,4 +1,5 @@
 import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
 import 'package:free_chat/entity/enums.dart';
 import 'package:free_chat/entity/role_string.dart';
 
@@ -11,7 +12,7 @@ class AccountEntity {
   DateTime lastLoginTimestamp;
   DateTime lastLogoutTimestamp;
   AccountEntity({
-    this.username,
+    @required this.username,
     this.password,
     this.role,
     this.loginStatus,
@@ -22,14 +23,14 @@ class AccountEntity {
       : username = map['username'],
         role = RoleString.role(map['role']),
         password = map['password'],
-        loginStatus = map['loginStatus'] == 1,
+        loginStatus = map['loginStatus'] == '1',
         lastLoginTimestamp = DateTime.parse(map['lastLoginTimestamp']),
         lastLogoutTimestamp = DateTime.parse(map['lastLogoutTimestamp']);
   Map<String, dynamic> toMap() => <String, dynamic>{
         'username': username,
         'role': RoleString.string(role),
         'password': password,
-        'loginStatus': loginStatus ? 1 : 0,
+        'loginStatus': loginStatus ? '1' : '0',
         'lastLoginTimestamp': lastLoginTimestamp.toString(),
         'lastLogoutTimestamp': lastLogoutTimestamp.toString(),
       };

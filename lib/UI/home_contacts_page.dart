@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:free_chat/configuration/home_contacts_conf.dart';
-import 'package:free_chat/entity/contact_entity.dart';
+import 'package:free_chat/provider/base_provider.dart';
+import 'package:free_chat/provider/entity/friend_entity.dart';
+import 'package:free_chat/provider/entity/history_entity.dart';
+import 'package:free_chat/provider/entity/provider_code.dart';
+import 'package:free_chat/provider/entity/provider_entity.dart';
+import 'package:free_chat/provider/friend_provider.dart';
 import 'package:free_chat/util/ui/custom_style.dart';
 import 'package:free_chat/util/ui/people_expansion_panel.dart';
 import 'package:provider/provider.dart';
@@ -16,19 +21,24 @@ class HomeContactsPage extends StatefulWidget {
 
 class _HomeContactsPageState extends State<HomeContactsPage>
     with SingleTickerProviderStateMixin {
+  bool fetched = false;
+  bool isFetching = false;
+  IProvider provider;
+  List list = [];
   int x = 0;
   int _currentTabIndex = 0;
   TabController _tabController;
-  List list = new List();
   List<List<bool>> expandedFlag = List(HomeContactsConf.strPool.length);
   Future<Null> _onRefresh() async {
-    x++;
-    await Future.delayed(Duration(seconds: 1), () {
-      print('refresh');
-      setState(() {
-        list = List.generate(20, (i) => '第 $x 次刷新后数据 $i');
-      });
-    });
+    provider.setEntity(ProviderEntity(code: FriendProviderCode.queryAllFriend));
+    list = await provider.provide();
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    provider?.close();
+    super.dispose();
   }
 
   @override
@@ -49,6 +59,22 @@ class _HomeContactsPageState extends State<HomeContactsPage>
               _currentTabIndex = _tabController.index;
             });
           });
+    fetched = false;
+    isFetching = true;
+    provider = FriendProvier(username: widget.username)
+      ..init().then((result) async {
+        print('provider init result: $result');
+        if (result) {
+          provider.setEntity(
+              ProviderEntity(code: FriendProviderCode.queryAllFriend));
+          final result=await provider.provide() ;
+          list = result;
+          setState(() {
+            fetched = true;
+            isFetching = false;
+          });
+        }
+      });
   }
 
   Widget build(BuildContext context) {
@@ -102,7 +128,7 @@ class _HomeContactsPageState extends State<HomeContactsPage>
                 ExpansionPanelList(
                   expansionCallback: (int index, bool isExpanded) {
                     setState(() {
-                     // print('i: $i,index: $index,Expanded: $isExpanded');
+                      // print('i: $i,index: $index,Expanded: $isExpanded');
                       expandedFlag[i][index] = !isExpanded;
                     });
                   },
@@ -116,13 +142,7 @@ class _HomeContactsPageState extends State<HomeContactsPage>
                         j++)
                       PeopleExpansionPanel(
                         context,
-                        content: [
-                          for (int i = 0; i < 10; i++)
-                            ContactEntity(
-                              alias: 'alias',
-                              overview: 'subTitle',
-                            ),
-                        ],
+                        content: list,
                         header: Padding(
                           padding: const EdgeInsets.only(
                             top: 10,
