@@ -62,7 +62,7 @@ class _ProfileTestState extends State<ProfileTest> {
             ),
             RaisedButton(
               onPressed: () async {
-                final username = 'yue';
+                final username = 'y';
                 if (inited) {
                   provider.setEntity(ProviderEntity(
                       code: ProfileProviderCode.deleteProfile,
@@ -83,14 +83,14 @@ class _ProfileTestState extends State<ProfileTest> {
             ),
             RaisedButton(
               onPressed: () async {
-                final username = 'yue';
+                final username = 'y';
                 if (inited) {
                   provider.setEntity(
                     ProviderEntity(
                       code: ProfileProviderCode.updateProfile,
                       content: ProfileEntity(
                         username: username,
-                        labels: ['Flutter','M D','Dart','WebSocket'],
+                        labels: ['Design','Pattern','Refactor','Optimization'],
                         lsnCount: List.generate(
                             3, (index) => Random.secure().nextInt(300)),
                         infos: List.generate(
@@ -112,7 +112,7 @@ class _ProfileTestState extends State<ProfileTest> {
             ),
             RaisedButton(
               onPressed: () async {
-                final username = 'yue';
+                final username = 'y';
                 if (inited) {
                   provider.setEntity(ProviderEntity(
                       code: ProfileProviderCode.queryProfile,
@@ -138,7 +138,7 @@ class _ProfileTestState extends State<ProfileTest> {
                     ProviderEntity(
                       code: ProfileProviderCode.addProfile,
                       content: ProfileEntity(
-                        username: 'yue',
+                        username: 'y',
                         labels: List.generate(
                             4,
                             (index) => Random.secure()

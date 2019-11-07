@@ -61,7 +61,7 @@ class _FriendTestState extends State<FriendTest> {
             ),
             RaisedButton(
               onPressed: () async {
-                final username = 'yue';
+                final username = 'y';
                 if (inited) {
                   provider.setEntity(ProviderEntity(
                       code: FriendProviderCode.deleteFriend,
@@ -82,7 +82,7 @@ class _FriendTestState extends State<FriendTest> {
             ),
             RaisedButton(
               onPressed: () async {
-                final username = 'yue';
+                final username = 'y';
                 if (inited) {
                   provider.setEntity(ProviderEntity(
                       code: FriendProviderCode.updateFriend,
@@ -106,7 +106,7 @@ class _FriendTestState extends State<FriendTest> {
             ),
             RaisedButton(
               onPressed: () async {
-                final username = 'yue';
+                final username = 'y';
                 if (inited) {
                   provider.setEntity(ProviderEntity(
                       code: FriendProviderCode.queryFriend,
@@ -131,9 +131,9 @@ class _FriendTestState extends State<FriendTest> {
                   provider.setEntity(ProviderEntity(
                       code: FriendProviderCode.addFriend,
                       content: FriendEntity(
-                        username:'yue',
-                        alias: 'love',
-                        overview: 'my love',
+                        username:'y',
+                        alias: 'Intresting',
+                        overview: 'Nothing special.',
                       )));
                   final result = await provider.provide();
                   scaffoldKey.currentState.showSnackBar(SnackBar(

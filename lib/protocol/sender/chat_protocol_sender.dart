@@ -17,7 +17,7 @@ class ChatProtocolSender extends BaseProtocolSender
   ChatProtocolSender(
       {this.username, this.password, this.from, this.to, this.groupChatFlag});
   @override
-  String get urlPrefix => 'chat';
+  String get urlPrefix => 'chat/$username';
   @override
   Future<WebSocket> init() {
     return super.setUp();

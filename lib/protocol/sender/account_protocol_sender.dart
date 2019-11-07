@@ -21,7 +21,7 @@ class AccountProtocol extends BaseProtocolSender
   AccountProtocolEntity protocolEntity;
   AccountProtocol({this.username, this.password});
   @override
-  String get urlPrefix => 'account';
+  String get urlPrefix => 'account/$username';
   @override
   Future<WebSocket> init() {
     return super.setUp();

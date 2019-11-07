@@ -35,7 +35,7 @@ class ProfileBodyListTitle {
   ProfileBodyListTitle({this.title, this.content})
       : leading = _getIconData(title);
   factory ProfileBodyListTitle.index(int index) {
-    final contents = ['githuby24@gmail.com', '110', 'River QingShui of USETC'];
+    final contents = ['githuby24@gmail.com', '119', 'River QingShui of USETC'];
     return ProfileBodyListTitle(
         title: _leadingPool.keys.toList()[index], content: contents[index]);
   }

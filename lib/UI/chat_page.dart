@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
+import 'package:free_chat/UI/chat_setting_page.dart';
 import 'package:free_chat/entity/enums.dart';
 import 'package:free_chat/protocol/entity/chat_protocol_entity.dart';
 import 'package:free_chat/protocol/handler/chat_protocol_handler.dart';
@@ -19,6 +20,7 @@ import 'package:free_chat/provider/entity/provider_code.dart';
 import 'package:free_chat/provider/entity/provider_entity.dart';
 import 'package:free_chat/provider/history_provider.dart';
 import 'package:free_chat/util/function_pool.dart';
+import 'package:free_chat/util/ui/page_tansitions/fade_route.dart';
 
 class ChatPage extends StatefulWidget {
   final String from;
@@ -57,6 +59,7 @@ class ChatPageState extends State<ChatPage> {
   bool isConnected = false;
   bool error = false;
   int messageId = 0;
+  int setting = 0;
   IProtocolService chatService;
   Map<String, dynamic> proccessingMessages = {};
   List<HistoryEntity> unreadList = [];
@@ -90,6 +93,7 @@ class ChatPageState extends State<ChatPage> {
           body: ChatBodyEntity(content: content));
       chatService.setEntity(protocolEntity);
       if (!chatService.send()) {
+        print('send fails');
         initWebSocket();
         setState(() {
           message.status = MessageSendStatus.failture;
@@ -410,7 +414,16 @@ class ChatPageState extends State<ChatPage> {
               Icons.info_outline,
               color: Colors.white,
             ),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.of(context)
+                  .push(FadeRoute(page: ChatSettingPage()))
+                  .then((re) {
+                setState(() {
+                  print('re: $re');
+                  setting = re ?? 0;
+                });
+              });
+            },
           ),
         ],
       ),

@@ -61,7 +61,7 @@ class _ConversationTestState extends State<ConversationTest> {
             ),
             RaisedButton(
               onPressed: () async {
-                final username = 'yue';
+                final username = 'y';
                 if (inited) {
                   provider.setEntity(ProviderEntity(
                       code: ConversationProviderCode.deleteConversation,
@@ -82,7 +82,7 @@ class _ConversationTestState extends State<ConversationTest> {
             ),
             RaisedButton(
               onPressed: () async {
-                final username = 'yue';
+                final username = 'y';
                 if (inited) {
                   provider.setEntity(ProviderEntity(
                       code: ConversationProviderCode.updateConversation,
@@ -107,7 +107,7 @@ class _ConversationTestState extends State<ConversationTest> {
             ),
             RaisedButton(
               onPressed: () async {
-                final username = 'yue';
+                final username = 'y';
                 if (inited) {
                   provider.setEntity(ProviderEntity(
                       code: ConversationProviderCode.queryConversation,
@@ -132,11 +132,11 @@ class _ConversationTestState extends State<ConversationTest> {
                   provider.setEntity(ProviderEntity(
                       code: ConversationProviderCode.addConversation,
                       content: ConversationEntity(
-                        username:'yue',
+                        username:'y',
                             //Random.secure().nextDouble().toStringAsFixed(8),
-                        alias: 'love',
+                        alias: 'Interesting',
                         timestamp: DateTime.now(),
-                        overview: 'my love',
+                        overview: 'Nothing special.',
                       )));
                   final result = await provider.provide();
                   scaffoldKey.currentState.showSnackBar(SnackBar(

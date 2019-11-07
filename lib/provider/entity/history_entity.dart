@@ -137,15 +137,17 @@ class _OneselfHistoryItemState extends State<OneselfHistoryItem> {
     );
     switch (status) {
       case MessageSendStatus.processing:
-        if (timestamp.difference(DateTime.now()).abs().inSeconds < 4)
+        if (timestamp.difference(DateTime.now()).abs().inSeconds > 4)
           return processing;
         return failture;
       case MessageSendStatus.success:
-        if (timestamp.difference(DateTime.now()).abs().inSeconds < 20)
-          return success;
+        if (timestamp.difference(DateTime.now()).abs().inMilliseconds > 50000)
         return null;
+          return success;
       case MessageSendStatus.failture:
         return failture;
+      case MessageSendStatus.done:
+        return null;
       default:
         return null;
     }
