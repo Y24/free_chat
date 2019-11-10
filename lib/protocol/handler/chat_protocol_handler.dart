@@ -8,10 +8,10 @@ import 'package:free_chat/protocol/handler/base_protocol_handler.dart';
 import 'package:free_chat/provider/entity/history_entity.dart';
 
 abstract class IChatProtocolHandler implements IProtocolHandler {
-  Future<HandleResultEntity> handleNewSend();
-  Future<HandleResultEntity> handleAccept();
-  Future<HandleResultEntity> handleReSend();
-  Future<HandleResultEntity> handleReject();
+  HandleResultEntity handleNewSend();
+  HandleResultEntity handleAccept();
+  HandleResultEntity handleReSend();
+  HandleResultEntity handleReject();
 }
 
 class ChatProtocolHandler extends BaseProtocolHandler
@@ -34,24 +34,24 @@ class ChatProtocolHandler extends BaseProtocolHandler
   }
 
   @override
-  Future<HandleResultEntity> handle(WebSocket webSocket) async {
+  HandleResultEntity handle(WebSocket webSocket) {
     _webSocket = webSocket;
     switch (protocolEntity.head.code as ChatProtocolCode) {
       case ChatProtocolCode.newSend:
-        return await handleNewSend();
+        return handleNewSend();
       case ChatProtocolCode.reSend:
-        return await handleReSend();
+        return handleReSend();
       case ChatProtocolCode.accept:
-        return await handleAccept();
+        return handleAccept();
       case ChatProtocolCode.reject:
-        return await handleReject();
+        return handleReject();
       default:
         print('Here is a bug to be fixed');
         return null;
     }
   }
 
-  Future<bool> _authenticate() async => true;
+  bool _authenticate() => true;
   void _response({ChatProtocolCode code, String content, DateTime timestamp}) {
     _webSocket.add(json.encode(ChatProtocolEntity(
       head: ChatHeadEntity(
@@ -67,28 +67,11 @@ class ChatProtocolHandler extends BaseProtocolHandler
   }
 
   @override
-  Future<HandleResultEntity> handleNewSend() async {
+  HandleResultEntity handleNewSend(){
+    print('Handle new send: ${protocolEntity.body.content}');
     HandleResultEntity resultEntity =
         HandleResultEntity(code: ChatProtocolCode.newSend);
-    if (!await init()) {
-      _response(
-        code: ChatProtocolCode.reject,
-        content: 'server',
-        timestamp: protocolEntity.head.timestamp,
-      );
-      resultEntity.content = {
-        'status': SendStatus.serverError,
-        'entity': HistoryEntity(
-            historyId: protocolEntity.head.id,
-            username: protocolEntity.head.to,
-            content: protocolEntity.body.content,
-            isOthers: true,
-            timestamp: protocolEntity.head.timestamp,
-            status: MessageSendStatus.failture),
-      };
-      return resultEntity;
-    }
-    if (await _authenticate()) {
+    if (_authenticate()) {
       //TODO:
       _response(
         code: ChatProtocolCode.accept,
@@ -128,15 +111,10 @@ class ChatProtocolHandler extends BaseProtocolHandler
   }
 
   @override
-  Future<HandleResultEntity> handleAccept() async {
+  HandleResultEntity handleAccept() {
     HandleResultEntity resultEntity =
         HandleResultEntity(code: ChatProtocolCode.accept);
-    if (!await init()) {
-      _response(code: ChatProtocolCode.reject, content: 'server');
-      resultEntity.content = null;
-      return resultEntity;
-    }
-    if (await _authenticate()) {
+    if (_authenticate()) {
       resultEntity.content = protocolEntity.head.timestamp;
       return resultEntity;
     } else {
@@ -146,15 +124,11 @@ class ChatProtocolHandler extends BaseProtocolHandler
   }
 
   @override
-  Future<HandleResultEntity> handleReSend() async {
+  HandleResultEntity handleReSend(){
     HandleResultEntity resultEntity =
         HandleResultEntity(code: ChatProtocolCode.reSend);
-    if (!await init()) {
-      _response(code: ChatProtocolCode.reject, content: 'server');
-      resultEntity.content = false;
-      return resultEntity;
-    }
-    if (await _authenticate()) {
+    
+    if (_authenticate()) {
       //TODO:
       resultEntity.content = true;
       return resultEntity;
@@ -166,15 +140,11 @@ class ChatProtocolHandler extends BaseProtocolHandler
   }
 
   @override
-  Future<HandleResultEntity> handleReject() async {
+  HandleResultEntity handleReject() {
     HandleResultEntity resultEntity =
         HandleResultEntity(code: ChatProtocolCode.reject);
-    if (!await init()) {
-      _response(code: ChatProtocolCode.reject, content: 'server');
-      resultEntity.content = false;
-      return resultEntity;
-    }
-    if (await _authenticate()) {
+   
+    if (_authenticate()) {
       //TODO:
       resultEntity.content = true;
       return resultEntity;

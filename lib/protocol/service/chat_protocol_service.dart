@@ -27,9 +27,9 @@ class ChatProtocolService implements IProtocolService {
   }
 
   @override
-  Future<HandleResultEntity> handle(WebSocket webSocket) async {
+  HandleResultEntity handle(WebSocket webSocket) {
     protocolHandler.setEntity(protocolEntity);
-    return await protocolHandler.handle(webSocket);
+    return protocolHandler.handle(webSocket);
   }
 
   @override

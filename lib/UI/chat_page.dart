@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:free_chat/UI/chat_setting_page.dart';
+import 'package:free_chat/entity/backend/handle_result_entity.dart';
 import 'package:free_chat/entity/enums.dart';
 import 'package:free_chat/protocol/entity/chat_protocol_entity.dart';
 import 'package:free_chat/protocol/handler/chat_protocol_handler.dart';
@@ -61,6 +62,7 @@ class ChatPageState extends State<ChatPage> {
   int messageId = 0;
   int setting = 0;
   IProtocolService chatService;
+  Map<String, HandleResultEntity> handleResultPool = {};
   Map<String, dynamic> proccessingMessages = {};
   List<HistoryEntity> unreadList = [];
   List totalList = [];
@@ -190,33 +192,37 @@ class ChatPageState extends State<ChatPage> {
       ws.listen((data) async {
         try {
           print('get data: $data');
-          final request = ChatProtocolEntity.fromJson(json.decode(data));
-          chatService.setEntity(request);
-          final handleResult = await chatService.handle(ws);
-          print(handleResult);
-          switch (handleResult.code) {
+          chatService.setEntity(ChatProtocolEntity.fromJson(json.decode(data)));
+          handleResultPool[data] = chatService.handle(ws);
+          print('handle result pool: $handleResultPool');
+          print('now data:$data');
+          print('handle result content: ${handleResultPool[data].content}');
+          switch (handleResultPool[data].code) {
             case ChatProtocolCode.accept:
               //well, null means failture.
-              if (handleResult.content != null) {
+              if (handleResultPool[data].content != null) {
                 provider0.setEntity(ProviderEntity(
                     code: HistoryProviderCode.updateHistory,
                     content: HistoryEntity(
-                      timestamp: handleResult.content,
+                      timestamp: handleResultPool[data].content,
                       username: widget.to,
                       status: MessageSendStatus.success,
                     )));
                 await provider0.provide();
-                print('handleResult.content: ${handleResult.content}');
+
+                print(
+                    'handleResult.content: ${handleResultPool[data].content}');
                 print('processing messages: ${proccessingMessages.toString()}');
                 setState(() {
-                  proccessingMessages[handleResult.content.toString()].status =
-                      MessageSendStatus.success;
+                  proccessingMessages[handleResultPool[data].content.toString()]
+                      .status = MessageSendStatus.success;
                 });
                 _hideSendDoneTimer =
                     Timer.periodic(Duration(seconds: 4), (timer) {
                   timer.cancel();
                   setState(() {
-                    proccessingMessages[handleResult.content.toString()]
+                    proccessingMessages[
+                            handleResultPool[data].content.toString()]
                         .status = MessageSendStatus.done;
                   });
                 });
@@ -224,32 +230,35 @@ class ChatPageState extends State<ChatPage> {
                 provider0.setEntity(ProviderEntity(
                     code: HistoryProviderCode.updateHistory,
                     content: HistoryEntity(
-                      timestamp: handleResult.content,
+                      timestamp: handleResultPool[data].content,
                       username: widget.to,
                       status: MessageSendStatus.failture,
                     )));
                 await provider0.provide();
                 setState(() {
-                  proccessingMessages[handleResult.content.toString()].status =
-                      MessageSendStatus.failture;
+                  proccessingMessages[handleResultPool[data].content.toString()]
+                      .status = MessageSendStatus.failture;
                 });
               }
               break;
             case ChatProtocolCode.newSend:
-              print('recieve new send:${handleResult.content}');
-              switch (handleResult.content['status']) {
+              print('recieve new send:${handleResultPool[data].content}');
+              switch (handleResultPool[data].content['status']) {
                 case SendStatus.success:
                   provider0.setEntity(ProviderEntity(
                       code: HistoryProviderCode.addHistory,
-                      content: handleResult.content['entity']));
+                      content: handleResultPool[data].content['entity']));
                   await provider0.provide();
+                  print(
+                      'Now handle Result content: ${handleResultPool[data].content}');
                   if (_historyScrollController.offset == 0.0) {
                     setState(() {
-                      list.insert(0, handleResult.content['entity']);
+                      list.insert(0, handleResultPool[data].content['entity']);
                     });
                   } else {
                     setState(() {
-                      unreadList.insert(0, handleResult.content['entity']);
+                      unreadList.insert(
+                          0, handleResultPool[data].content['entity']);
                     });
                   }
                   break;

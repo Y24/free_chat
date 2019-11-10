@@ -5,7 +5,7 @@ import 'package:sqflite/sqflite.dart';
 
 abstract class IProtocolHandler {
   Future<bool> init();
-  Future<HandleResultEntity> handle(WebSocket webSocket);
+  HandleResultEntity handle(WebSocket webSocket);
   Future<void> dispose();
   get entity;
   void setEntity(entity);
