@@ -26,7 +26,8 @@ enum HistoryProviderCode {
   addHistory,
   updateHistory,
   deleteHistory,
-  queryHistory,
+  queryHistoryByName,
+  queryHistoryByTimestamp,
   queryAllHistory,
 }
 enum ConversationProviderCode {

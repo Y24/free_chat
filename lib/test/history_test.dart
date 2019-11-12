@@ -114,7 +114,7 @@ class _HistoryTestState extends State<HistoryTest> {
                 final username = 'yue';
                 if (inited) {
                   provider.setEntity(ProviderEntity(
-                      code: HistoryProviderCode.queryHistory,
+                      code: HistoryProviderCode.queryHistoryByName,
                       content: HistoryEntity(
                         username: username,
                       )));

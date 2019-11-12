@@ -10,7 +10,8 @@ abstract class IHistoryProvider implements IProvider {
   Future addHistory();
   Future updateHistory();
   Future deleteHistory();
-  Future queryHistory();
+  Future queryHistoryByName();
+  Future queryHistoryByTimestamp();
   Future queryAllHistory();
 }
 
@@ -66,8 +67,10 @@ class HistoryProvider extends BaseProvider implements IHistoryProvider {
         return await updateHistory();
       case HistoryProviderCode.deleteHistory:
         return await deleteHistory();
-      case HistoryProviderCode.queryHistory:
-        return await queryHistory();
+      case HistoryProviderCode.queryHistoryByName:
+        return await queryHistoryByName();
+      case HistoryProviderCode.queryHistoryByTimestamp:
+        return await queryHistoryByTimestamp();
       case HistoryProviderCode.queryAllHistory:
         return await queryAllHistory();
       default:
@@ -104,7 +107,7 @@ class HistoryProvider extends BaseProvider implements IHistoryProvider {
   }
 
   @override
-  Future queryHistory() async {
+  Future queryHistoryByName() async {
     HistoryEntity historyEntity = entity.content;
     final result = await db.query('history',
         columns: tables['history'],
@@ -146,7 +149,7 @@ class HistoryProvider extends BaseProvider implements IHistoryProvider {
 
   @override
   Future addHistory() async {
-    if ((await queryHistory() as List)
+    if ((await queryHistoryByName() as List)
         .any((r) => r.timestamp == entity.content.timestamp))
       return false;
     else {
@@ -168,5 +171,28 @@ class HistoryProvider extends BaseProvider implements IHistoryProvider {
     assert(result <= 1,
         'Well, there should not exsit more than one history with id: ${entity.content.historyId} username: ${entity.content.username}');
     return result == 1;
+  }
+
+  @override
+  Future queryHistoryByTimestamp() async {
+    HistoryEntity historyEntity = entity.content;
+    final timestamp = historyEntity.timestamp;
+    final username = historyEntity.username;
+    try {
+      final result = await db.query('history',
+          columns: tables['history'],
+          where: 'username =? AND timestamp = ?',
+          whereArgs: [username, timestamp.toString()]);
+      assert(result.length <= 1,
+          'Well, there should exist no more than one history with username : ${historyEntity.username}, timestamp: ${historyEntity.timestamp}');
+      if (result.isEmpty) {
+        return HistoryEntity.emptyHistoryEntity;
+      } else {
+        return HistoryEntity.fromMap(result[0]);
+      }
+    } catch (e) {
+      print('error while query history by timestamp: $e');
+      return false;
+    }
   }
 }

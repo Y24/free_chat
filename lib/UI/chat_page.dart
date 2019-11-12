@@ -63,12 +63,16 @@ class ChatPageState extends State<ChatPage> {
   int setting = 0;
   IProtocolService chatService;
   Map<String, HandleResultEntity> handleResultPool = {};
+  List<HistoryEntity> newRecieveHistoryPool = [];
+  List<ProviderEntity> acceptHistoryPool = [];
   Map<String, dynamic> proccessingMessages = {};
   List<HistoryEntity> unreadList = [];
   List totalList = [];
   StreamSubscription networkSubscription;
   StreamSubscription messageSubscription;
   Timer _hideSendDoneTimer;
+  Timer _clearHistoryTimer;
+  Timer _syncHistoryTimer;
   sendMessage({String content, DateTime timestamp}) {
     if (isConnected) {
       var message = HistoryEntity(
@@ -164,6 +168,33 @@ class ChatPageState extends State<ChatPage> {
     }
   }
 
+  void initProvider() {
+    fetched0 = false;
+    provider0 = HistoryProvider(username: widget.from)
+      ..init().then((result) async {
+        print('provider0 init result: $result');
+        if (result) {
+          provider0.setEntity(ProviderEntity(
+              code: HistoryProviderCode.queryAllHistory,
+              content: AccountEntity(
+                username: widget.to,
+              )));
+          list = await provider0.provide();
+          list.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+          setState(() {
+            fetched0 = true;
+          });
+        }
+      });
+    provider1 = ConversationProvider(username: widget.from)
+      ..init().then((result) async {
+        print('provider1 init result: $result');
+        if (result) {
+          fetched1 = true;
+        }
+      });
+  }
+
   void initWebSocket() async {
     isConnected = false;
     isConnecting = true;
@@ -193,81 +224,62 @@ class ChatPageState extends State<ChatPage> {
         try {
           print('get data: $data');
           chatService.setEntity(ChatProtocolEntity.fromJson(json.decode(data)));
-          handleResultPool[data] = chatService.handle(ws);
+          final handleResult = chatService.handle(ws);
           print('handle result pool: $handleResultPool');
           print('now data:$data');
-          print('handle result content: ${handleResultPool[data].content}');
-          switch (handleResultPool[data].code) {
+          print('handle result content: ${handleResult.content}');
+          switch (handleResult.code) {
             case ChatProtocolCode.accept:
               //well, null means failture.
-              if (handleResultPool[data].content != null) {
+              if (handleResult.content != null) {
                 provider0.setEntity(ProviderEntity(
                     code: HistoryProviderCode.updateHistory,
                     content: HistoryEntity(
-                      timestamp: handleResultPool[data].content,
+                      timestamp: handleResult.content,
                       username: widget.to,
                       status: MessageSendStatus.success,
                     )));
                 await provider0.provide();
-
-                print(
-                    'handleResult.content: ${handleResultPool[data].content}');
+                print('handleResult.content: ${handleResult.content}');
                 print('processing messages: ${proccessingMessages.toString()}');
                 setState(() {
-                  proccessingMessages[handleResultPool[data].content.toString()]
-                      .status = MessageSendStatus.success;
+                  proccessingMessages[handleResult.content.toString()].status =
+                      MessageSendStatus.success;
                 });
+                _hideSendDoneTimer?.cancel();
                 _hideSendDoneTimer =
                     Timer.periodic(Duration(seconds: 4), (timer) {
                   timer.cancel();
                   setState(() {
-                    proccessingMessages[
-                            handleResultPool[data].content.toString()]
+                    proccessingMessages[handleResult.content.toString()]
                         .status = MessageSendStatus.done;
                   });
                 });
               } else {
-                provider0.setEntity(ProviderEntity(
+                acceptHistoryPool.add(ProviderEntity(
                     code: HistoryProviderCode.updateHistory,
                     content: HistoryEntity(
-                      timestamp: handleResultPool[data].content,
+                      timestamp: handleResult.content,
                       username: widget.to,
                       status: MessageSendStatus.failture,
                     )));
-                await provider0.provide();
                 setState(() {
-                  proccessingMessages[handleResultPool[data].content.toString()]
-                      .status = MessageSendStatus.failture;
+                  proccessingMessages[handleResult.content.toString()].status =
+                      MessageSendStatus.failture;
                 });
               }
               break;
             case ChatProtocolCode.newSend:
-              print('recieve new send:${handleResultPool[data].content}');
-              switch (handleResultPool[data].content['status']) {
-                case SendStatus.success:
-                  provider0.setEntity(ProviderEntity(
-                      code: HistoryProviderCode.addHistory,
-                      content: handleResultPool[data].content['entity']));
-                  await provider0.provide();
-                  print(
-                      'Now handle Result content: ${handleResultPool[data].content}');
-                  if (_historyScrollController.offset == 0.0) {
-                    setState(() {
-                      list.insert(0, handleResultPool[data].content['entity']);
-                    });
-                  } else {
-                    setState(() {
-                      unreadList.insert(
-                          0, handleResultPool[data].content['entity']);
-                    });
-                  }
-                  break;
-                case SendStatus.serverError:
-                  break;
-                case SendStatus.reject:
-                  break;
-                default:
-                  break;
+              print('recieve new send:${handleResult.content}');
+              newRecieveHistoryPool.add(handleResult.content['entity']);
+              if (_historyScrollController.offset == 0.0) {
+                setState(() {
+                  list.insert(0, handleResult.content['entity']);
+                });
+              } else {
+                setState(() {
+                  unreadList.insert(0, handleResult.content['entity']);
+                });
               }
               break;
             case ChatProtocolCode.reSend:
@@ -292,33 +304,38 @@ class ChatPageState extends State<ChatPage> {
     }
   }
 
+  void syncAccpetHistory() {
+    Future.doWhile(() async {
+      if (acceptHistoryPool.isEmpty) return false;
+      var entity = acceptHistoryPool.removeAt(0);
+      provider0.setEntity(entity);
+      return await provider0.provide();
+    });
+  }
+
+  void syncNewRecieveHistory() {
+    //  print('call to sync new recieve: $newRecieveHistoryPool');
+    Future.doWhile(() async {
+      if (newRecieveHistoryPool.isEmpty) return false;
+      var entity = newRecieveHistoryPool.removeAt(0);
+      provider0.setEntity(ProviderEntity(
+          code: HistoryProviderCode.queryHistoryByTimestamp, content: entity));
+      if (await provider0.provide() != HistoryEntity.emptyHistoryEntity)
+        return true;
+      provider0.setEntity(ProviderEntity(
+          code: HistoryProviderCode.addHistory, content: entity));
+      return await provider0.provide();
+    });
+  }
+
   @override
   void initState() {
     super.initState();
-    fetched0 = false;
-    provider0 = HistoryProvider(username: widget.from)
-      ..init().then((result) async {
-        print('provider0 init result: $result');
-        if (result) {
-          provider0.setEntity(ProviderEntity(
-              code: HistoryProviderCode.queryAllHistory,
-              content: AccountEntity(
-                username: widget.to,
-              )));
-          list = await provider0.provide();
-          list.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-          setState(() {
-            fetched0 = true;
-          });
-        }
-      });
-    provider1 = ConversationProvider(username: widget.from)
-      ..init().then((result) async {
-        print('provider1 init result: $result');
-        if (result) {
-          fetched1 = true;
-        }
-      });
+    initProvider();
+    _syncHistoryTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      syncNewRecieveHistory();
+      syncAccpetHistory();
+    });
     _messageController = TextEditingController();
     _historyScrollController = ScrollController()
       ..addListener(() {
@@ -361,6 +378,8 @@ class ChatPageState extends State<ChatPage> {
   void dispose() {
     print('call dispose chat_page:233');
     _hideSendDoneTimer?.cancel();
+    _clearHistoryTimer?.cancel();
+    _syncHistoryTimer?.cancel();
     provider0?.close();
     provider1?.close();
     chatService?.dispose();
@@ -368,6 +387,11 @@ class ChatPageState extends State<ChatPage> {
     _historyScrollController?.dispose();
     networkSubscription?.cancel();
     messageSubscription?.cancel();
+    _hideSendDoneTimer = _clearHistoryTimer = _syncHistoryTimer = null;
+    provider0 = provider1 = null;
+    chatService = null;
+    _messageController = _historyScrollController = null;
+    networkSubscription = messageSubscription = null;
     super.dispose();
   }
 
@@ -427,9 +451,34 @@ class ChatPageState extends State<ChatPage> {
               Navigator.of(context)
                   .push(FadeRoute(page: ChatSettingPage()))
                   .then((re) {
-                setState(() {
+                initProvider();
+                _messageController = TextEditingController();
+                _historyScrollController = ScrollController()
+                  ..addListener(() {
+                    if (unreadList.isNotEmpty &&
+                        _historyScrollController.offset == 0.0) {
+                      setState(() {
+                        list.insertAll(0, unreadList);
+                        list.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+                        unreadList.clear();
+                      });
+                    }
+                  });
+                initWebSocket();
+                networkSubscription =
+                    Connectivity().onConnectivityChanged.listen((status) {
+                  print('New status: $status');
+                  if (isConnected) chatService.dispose();
+                  isConnected = false;
+                  if (status != ConnectivityResult.none && !isConnecting)
+                    tryToConnect();
+                });
+                Timer.periodic(Duration(milliseconds: 600), (timer) {
+                  timer.cancel();
                   print('re: $re');
-                  setting = re ?? 0;
+                  setState(() {
+                    setting = re ?? 0;
+                  });
                 });
               });
             },
@@ -449,6 +498,15 @@ class ChatPageState extends State<ChatPage> {
     totalList.clear();
     totalList.insertAll(0, unreadList);
     totalList.insertAll(0, list);
+    _clearHistoryTimer?.cancel();
+    _clearHistoryTimer = null;
+    if (setting != 0) {
+      _clearHistoryTimer = Timer.periodic(Duration(seconds: setting), (timer) {
+        setState(() {
+          _clearHistory();
+        });
+      });
+    }
     if (totalList.length == 0)
       return Expanded(
         child: Container(),
@@ -580,5 +638,14 @@ class ChatPageState extends State<ChatPage> {
       '...',
       style: TextStyle(color: Colors.white),
     );
+  }
+
+  void _clearHistory() {
+    final now = DateTime.now();
+    list.removeWhere((history) =>
+        (history as HistoryEntity).timestamp.difference(now).abs().inSeconds >
+        setting);
+    unreadList.removeWhere((history) =>
+        history.timestamp.difference(now).abs().inSeconds > setting);
   }
 }
