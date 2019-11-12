@@ -136,7 +136,7 @@ class ChatPageState extends State<ChatPage> {
                 : historyEntity.content,
             timestamp: DateTime.now(),
           )));
-      provider1.provide();
+      await provider1.provide();
     } else {
       result.timestamp = DateTime.now();
       result.overview = historyEntity.content.length > 8
@@ -144,7 +144,7 @@ class ChatPageState extends State<ChatPage> {
           : historyEntity.content;
       provider1.setEntity(ProviderEntity(
           code: ConversationProviderCode.updateConversation, content: result));
-      provider1.provide();
+      await provider1.provide();
     }
     if (_historyScrollController.offset == 0.0) {
       provider0.setEntity(ProviderEntity(
@@ -501,7 +501,11 @@ class ChatPageState extends State<ChatPage> {
     _clearHistoryTimer?.cancel();
     _clearHistoryTimer = null;
     if (setting != 0) {
-      _clearHistoryTimer = Timer.periodic(Duration(seconds: setting), (timer) {
+      _clearHistoryTimer =
+          Timer.periodic(Duration(seconds: setting), (timer) async {
+        provider0
+            .setEntity(ProviderEntity(code: HistoryProviderCode.deleteHistory));
+        await provider0.provide();
         setState(() {
           _clearHistory();
         });
@@ -509,7 +513,12 @@ class ChatPageState extends State<ChatPage> {
     }
     if (totalList.length == 0)
       return Expanded(
-        child: Container(),
+        child: Container(
+          child: ListView(
+            controller: _historyScrollController,
+            reverse: true,
+          ),
+        ),
       );
     return Expanded(
       flex: 4,

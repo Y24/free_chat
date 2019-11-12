@@ -9,8 +9,7 @@ import 'package:sqflite/sqflite.dart';
 abstract class IHistoryProvider implements IProvider {
   Future addHistory();
   Future updateHistory();
-  Future deleteHistory();
-  Future queryHistoryByName();
+  Future deleteAllHistory();
   Future queryHistoryByTimestamp();
   Future queryAllHistory();
 }
@@ -66,9 +65,7 @@ class HistoryProvider extends BaseProvider implements IHistoryProvider {
       case HistoryProviderCode.updateHistory:
         return await updateHistory();
       case HistoryProviderCode.deleteHistory:
-        return await deleteHistory();
-      case HistoryProviderCode.queryHistoryByName:
-        return await queryHistoryByName();
+        return await deleteAllHistory();
       case HistoryProviderCode.queryHistoryByTimestamp:
         return await queryHistoryByTimestamp();
       case HistoryProviderCode.queryAllHistory:
@@ -107,19 +104,6 @@ class HistoryProvider extends BaseProvider implements IHistoryProvider {
   }
 
   @override
-  Future queryHistoryByName() async {
-    HistoryEntity historyEntity = entity.content;
-    final result = await db.query('history',
-        columns: tables['history'],
-        where: 'username = ?',
-        whereArgs: [historyEntity.username]);
-    if (result.isEmpty)
-      return [];
-    else
-      return result.map((r) => HistoryEntity.fromMap(r)).toList();
-  }
-
-  @override
   Future updateHistory() async {
     HistoryEntity historyEntity = entity.content;
     final timestamp = historyEntity.timestamp;
@@ -149,7 +133,7 @@ class HistoryProvider extends BaseProvider implements IHistoryProvider {
 
   @override
   Future addHistory() async {
-    if ((await queryHistoryByName() as List)
+    if ((await queryAllHistory() as List)
         .any((r) => r.timestamp == entity.content.timestamp))
       return false;
     else {
@@ -164,13 +148,11 @@ class HistoryProvider extends BaseProvider implements IHistoryProvider {
   }
 
   @override
-  Future deleteHistory() async {
-    final result = await db.delete('history',
-        where: 'historyId = ? AND username = ?',
-        whereArgs: [entity.content.historyId, entity.content.username]);
-    assert(result <= 1,
-        'Well, there should not exsit more than one history with id: ${entity.content.historyId} username: ${entity.content.username}');
-    return result == 1;
+  Future deleteAllHistory() async {
+    final result = await db.delete(
+      'history',
+    );
+    return result >= 1;
   }
 
   @override
