@@ -3,7 +3,6 @@ import 'package:flutter/rendering.dart';
 import 'package:free_chat/UI/profile_page.dart';
 import 'package:free_chat/provider/account_provider.dart';
 import 'package:free_chat/provider/base_provider.dart';
-import 'package:free_chat/provider/entity/account_entity.dart';
 import 'package:free_chat/provider/entity/provider_code.dart';
 import 'package:free_chat/provider/entity/provider_entity.dart';
 import 'package:free_chat/util/ui/page_tansitions/fade_route.dart';

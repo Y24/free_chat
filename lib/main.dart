@@ -10,5 +10,5 @@ import 'package:free_chat/util/ui/start_page.dart';
 
 void main() => runApp(StartPage());
 /* void main() => runApp(MaterialApp(
-      home: ProfileTest(username: 'yue',),
+      home: FriendTest(username: 'y'),
     )); */

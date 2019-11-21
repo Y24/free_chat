@@ -22,7 +22,7 @@ abstract class BaseProtocolSender {
   bool _connected = false;
 
   bool get connected => _connected;
-  Future<void> clean() async {
+  Future<void> _clean() async {
     await webSocket?.close();
     webSocket = null;
     _connected = false;
@@ -31,7 +31,7 @@ abstract class BaseProtocolSender {
   Future<WebSocket> setUp() async {
     print('setUp: _connected: $_connected ,webSocket: $webSocket');
     if (_connected && webSocket != null) return webSocket;
-    await clean();
+    await _clean();
     try {
       print('$schema://$domainName:$port/$urlPrefix');
       webSocket =
@@ -45,6 +45,6 @@ abstract class BaseProtocolSender {
   }
 
   Future<void> close() async {
-    await clean();
+    await _clean();
   }
 }

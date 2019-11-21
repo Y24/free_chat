@@ -61,7 +61,7 @@ class _FriendTestState extends State<FriendTest> {
             ),
             RaisedButton(
               onPressed: () async {
-                final username = 'y';
+                final username = 'yue';
                 if (inited) {
                   provider.setEntity(ProviderEntity(
                       code: FriendProviderCode.deleteFriend,
@@ -82,7 +82,7 @@ class _FriendTestState extends State<FriendTest> {
             ),
             RaisedButton(
               onPressed: () async {
-                final username = 'y';
+                final username = 'yue';
                 if (inited) {
                   provider.setEntity(ProviderEntity(
                       code: FriendProviderCode.updateFriend,
@@ -131,7 +131,7 @@ class _FriendTestState extends State<FriendTest> {
                   provider.setEntity(ProviderEntity(
                       code: FriendProviderCode.addFriend,
                       content: FriendEntity(
-                        username:'y',
+                        username:'yue',
                         alias: 'Intresting',
                         overview: 'Nothing special.',
                       )));

@@ -184,7 +184,7 @@ abstract class Configuration {
       WelcomePageResource(
         imageName: '${imageResourcePathPrefix}milk.jpg',
         introTitle: 'Chat with more convinience',
-        introContent: 'No worry about security, speeding, and much more.',
+        introContent: 'No worry about security, spending, and much more.',
       ),
       WelcomePageResource(
         imageName: '${imageResourcePathPrefix}rain.jpg',

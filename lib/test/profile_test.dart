@@ -90,7 +90,7 @@ class _ProfileTestState extends State<ProfileTest> {
                       code: ProfileProviderCode.updateProfile,
                       content: ProfileEntity(
                         username: username,
-                        labels: ['Design','Pattern','Refactor','Optimization'],
+                        labels: ['Design','Pattern','Refactor','Code'],
                         lsnCount: List.generate(
                             3, (index) => Random.secure().nextInt(300)),
                         infos: List.generate(

@@ -17,7 +17,7 @@ abstract class BaseProtocolHandler {
   bool _connected = false;
   String get dbName;
   bool get connected => _connected;
-  Future<void> cleanUp() async {
+  Future<void> _cleanUp() async {
     await _db?.close();
     _db = null;
     _connected = false;
@@ -25,7 +25,7 @@ abstract class BaseProtocolHandler {
 
   Future<bool> setUp() async {
     if (_connected && _db != null) return true;
-    await cleanUp();
+    await _cleanUp();
     try {
       _db = await openDatabase('$dbPathPrefix/$dbName.db',
           version: 1, onCreate: (db, version) {});
@@ -38,6 +38,6 @@ abstract class BaseProtocolHandler {
   }
 
   Future<void> close() async {
-    await cleanUp();
+    await _cleanUp();
   }
 }
