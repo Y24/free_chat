@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 ///  }
 /// ```
 /// see also:
-/// * [State.setState], where is pretty similar with everybody.
+/// * [State.setState], which is pretty similar with everybody.
 @optionalTypeArgs
 abstract class ExposedState<T extends StatefulWidget> extends State<T> {
   ///

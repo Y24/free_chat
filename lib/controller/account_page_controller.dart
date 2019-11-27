@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:free_chat/configuration/configuration.dart';
 import 'package:free_chat/controller/base_page_controller.dart';
+import 'package:free_chat/controller/entity/exposed_state.dart';
 import 'package:free_chat/entity/enums.dart';
 import 'package:free_chat/page/account_page.dart';
 import 'package:free_chat/page/welcome.dart';
@@ -40,23 +41,24 @@ class AccountPageController extends BasePageController {
   IProtocolSender accountProtocol;
   @override
   String get path => r'lib/page/account_page.dart';
-  @override
-  void dispose() {
-    provider?.close();
-    accountProtocol?.dispose();
-  }
 
   @override
-  void init({State state}) {
+  void init({ExposedState state}) {
     super.init(state: state);
     providerInited = false;
     provider = AccountProvider()
       ..init().then((result) async {
         print('provider init result: $result');
-        (state as LoginPageState).update(() {
+        (state as AccountUIState).update(() {
           providerInited = result;
         });
       });
+  }
+
+  @override
+  void dispose() {
+    provider?.close();
+    accountProtocol?.dispose();
   }
 
   void switchToLoginTab() {
@@ -256,7 +258,7 @@ class AccountPageController extends BasePageController {
       if (time.tick > Configuration.maxConnectionTryTimes) {
         time.cancel();
         state.update(() {
-          isLoginProcessing = true;
+          isLoginProcessing = false;
         });
         return;
       }
@@ -273,7 +275,7 @@ class AccountPageController extends BasePageController {
           onPressed: () {
             timer.cancel();
             state.update(() {
-              isLoginProcessing = true;
+              isLoginProcessing = false;
             });
           },
         ),
@@ -311,7 +313,7 @@ class AccountPageController extends BasePageController {
                     language: language,
                   )));
                   state.update(() {
-                    isLoginProcessing = true;
+                    isLoginProcessing = false;
                   });
                   break;
                 case LoginStatus.timeoutError:
@@ -321,9 +323,6 @@ class AccountPageController extends BasePageController {
                     key: 'timeOutStr',
                     language: language,
                   )));
-                  state.update(() {
-                    isLoginProcessing = true;
-                  });
                   break;
                 case LoginStatus.authenticationFailture:
                   Scaffold.of(context)
@@ -333,7 +332,7 @@ class AccountPageController extends BasePageController {
                     language: language,
                   )));
                   state.update(() {
-                    isLoginProcessing = true;
+                    isLoginProcessing = false;
                   });
                   break;
                 case LoginStatus.authenticationSuccess:
@@ -367,7 +366,7 @@ class AccountPageController extends BasePageController {
                     language: language,
                   )));
                   state.update(() {
-                    isLoginProcessing = true;
+                    isLoginProcessing = false;
                   });
                   break;
                 default:

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:free_chat/controller/account_page_controller.dart';
-import 'package:free_chat/controller/entity/absorbed_state.dart';
+import 'package:free_chat/controller/entity/exposed_state.dart';
 import 'package:free_chat/page/account_recovery.dart';
 import 'package:free_chat/configuration/configuration.dart';
 import 'package:free_chat/entity/enums.dart';
@@ -24,21 +24,21 @@ class AccountPage extends StatelessWidget {
       title: appTitle,
       theme: Provider.of<CustomThemeDataState>(context).themeData,
       home: Scaffold(
-        body: LoginPage(),
+        body: AccountUI(),
       ),
     );
   }
 }
 
 // Create a Form widget.
-class LoginPage extends StatefulWidget {
+class AccountUI extends StatefulWidget {
   @override
-  LoginPageState createState() {
-    return LoginPageState();
+  AccountUIState createState() {
+    return AccountUIState();
   }
 }
 
-class LoginPageState extends ExposedState<LoginPage> {
+class AccountUIState extends ExposedState<AccountUI> {
   AccountPageController pageController = AccountPageController();
   @override
   void initState() {

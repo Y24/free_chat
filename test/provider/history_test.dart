@@ -7,7 +7,6 @@ import 'package:free_chat/provider/entity/history_entity.dart';
 import 'package:free_chat/provider/entity/provider_code.dart';
 import 'package:free_chat/provider/entity/provider_entity.dart';
 import 'package:free_chat/provider/history_provider.dart';
-import 'package:sqflite/sqflite.dart';
 
 class HistoryTest extends StatefulWidget {
   final username;

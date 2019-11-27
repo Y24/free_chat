@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:free_chat/controller/entity/absorbed_state.dart';
+import 'package:free_chat/controller/entity/exposed_state.dart';
 
 abstract class BasePageController {
   ExposedState _state;

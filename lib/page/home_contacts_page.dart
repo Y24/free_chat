@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:free_chat/configuration/home_contacts_conf.dart';
 import 'package:free_chat/provider/base_provider.dart';
-import 'package:free_chat/provider/entity/friend_entity.dart';
-import 'package:free_chat/provider/entity/history_entity.dart';
 import 'package:free_chat/provider/entity/provider_code.dart';
 import 'package:free_chat/provider/entity/provider_entity.dart';
 import 'package:free_chat/provider/friend_provider.dart';

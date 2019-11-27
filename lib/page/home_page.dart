@@ -45,7 +45,9 @@ class _HomepageState extends State<Homepage> {
   @override
   Widget build(BuildContext context) {
     final languageState = Provider.of<LanguageState>(context);
-    final customThemeDataState = Provider.of<CustomThemeDataState>(context);
+
+    /// TODO: custom theme data
+    // final customThemeDataState = Provider.of<CustomThemeDataState>(context);
     final _kTabPages = <Widget>[
       HomeMessagesPage(
         username: widget.username,
@@ -115,9 +117,7 @@ class _HomepageState extends State<Homepage> {
               icon: Icon(
                 Icons.person_add,
               ),
-              onPressed: () {
-                
-              },
+              onPressed: () {},
             ),
           ],
         );
