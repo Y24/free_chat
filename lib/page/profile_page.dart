@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:free_chat/UI/chat_page.dart';
+import 'package:free_chat/page/chat_page.dart';
 import 'package:free_chat/entity/enums.dart';
 import 'package:free_chat/provider/base_provider.dart';
 import 'package:free_chat/provider/entity/profile_entity.dart';
@@ -33,7 +33,7 @@ class ProfilePage extends StatelessWidget {
           ),
         ],
       ),
-      body: _ProfileUI(hostUsername: hostUsername, username: username),
+      body: _Profilepage(hostUsername: hostUsername, username: username),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.message),
         onPressed: () async {
@@ -48,12 +48,12 @@ class ProfilePage extends StatelessWidget {
   }
 }
 
-class _ProfileUI extends StatefulWidget {
+class _Profilepage extends StatefulWidget {
   final String hostUsername;
   final String username;
-  _ProfileUI({@required this.hostUsername, @required this.username});
+  _Profilepage({@required this.hostUsername, @required this.username});
   @override
-  _ProfileUIState createState() => _ProfileUIState();
+  _ProfilepageState createState() => _ProfilepageState();
 }
 
 const _strPool = {
@@ -71,7 +71,7 @@ const _strPool = {
   },
 };
 
-class _ProfileUIState extends State<_ProfileUI> {
+class _ProfilepageState extends State<_Profilepage> {
   bool fetched = false;
   bool isFetching = false;
   IProvider provider;

@@ -4,7 +4,7 @@ import 'dart:io';
 
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
-import 'package:free_chat/UI/chat_setting_page.dart';
+import 'package:free_chat/page/chat_setting_page.dart';
 import 'package:free_chat/entity/backend/handle_result_entity.dart';
 import 'package:free_chat/entity/enums.dart';
 import 'package:free_chat/protocol/entity/chat_protocol_entity.dart';

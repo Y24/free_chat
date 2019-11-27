@@ -1,0 +1,4 @@
+enum AccountPageControllerCode {
+  login,
+  register,
+}

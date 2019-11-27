@@ -4,7 +4,7 @@
   */
 
 import 'package:flutter/material.dart';
-import 'package:free_chat/UI/home_page.dart';
+import 'package:free_chat/page/home_page.dart';
 import 'package:free_chat/configuration/configuration.dart';
 import 'package:free_chat/util/custom_will_pop_scope.dart';
 import 'package:free_chat/util/function_pool.dart';
@@ -16,7 +16,7 @@ import 'package:intro_views_flutter/intro_views_flutter.dart';
 
 class WelcomePage extends StatelessWidget {
   final username;
-  static final String path = 'lib\UI\wlecome.dart';
+  static final String path = r'lib\page\wlecome.dart';
 
   final language;
   final themeData;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:free_chat/UI/profile_page.dart';
+import 'package:free_chat/page/profile_page.dart';
 import 'package:free_chat/provider/account_provider.dart';
 import 'package:free_chat/provider/base_provider.dart';
 import 'package:free_chat/provider/entity/provider_code.dart';

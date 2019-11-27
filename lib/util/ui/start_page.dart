@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:free_chat/UI/account_page.dart';
-import 'package:free_chat/UI/home_page.dart';
+import 'package:free_chat/page/account_page.dart';
+import 'package:free_chat/page/home_page.dart';
 import 'package:free_chat/provider/account_provider.dart';
 import 'package:free_chat/provider/base_provider.dart';
 import 'package:free_chat/provider/entity/account_entity.dart';
 import 'package:free_chat/provider/entity/provider_code.dart';
 import 'package:free_chat/provider/entity/provider_entity.dart';
-import 'package:free_chat/util/function_pool.dart';
 import 'package:free_chat/util/ui/lifecycle_manager.dart';
 
 import '../custom_will_pop_scope.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:free_chat/UI/home_account_page.dart';
-import 'package:free_chat/UI/home_messages_page.dart';
+import 'package:free_chat/page/home_account_page.dart';
+import 'package:free_chat/page/home_messages_page.dart';
 import 'package:free_chat/configuration/configuration.dart';
 import 'package:free_chat/util/function_pool.dart';
 import 'package:free_chat/util/ui/custom_style.dart';
@@ -19,20 +19,20 @@ class HomePage extends StatelessWidget {
     return MaterialApp(
       title: appTitle,
       theme: customThemeDataState.themeData,
-      home: HomeUI(username: username),
+      home: Homepage(username: username),
     );
   }
 }
 
-class HomeUI extends StatefulWidget {
+class Homepage extends StatefulWidget {
   final GlobalKey<ScaffoldState> globalKey = GlobalKey();
   final username;
-  HomeUI({this.username});
+  Homepage({this.username});
   @override
-  _HomeUIState createState() => _HomeUIState();
+  _HomepageState createState() => _HomepageState();
 }
 
-class _HomeUIState extends State<HomeUI> {
+class _HomepageState extends State<Homepage> {
   int _currentTabIndex = 0;
   List list = new List();
   int x = 0;

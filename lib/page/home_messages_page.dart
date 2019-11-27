@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:free_chat/UI/chat_page.dart';
+import 'package:free_chat/page/chat_page.dart';
 import 'package:free_chat/provider/base_provider.dart';
 import 'package:free_chat/provider/conversation_provider.dart';
 import 'package:free_chat/provider/entity/provider_code.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:free_chat/UI/home_messages_page.dart';
+import 'package:free_chat/page/home_messages_page.dart';
 import 'package:free_chat/util/ui/slide_item.dart';
 
 class ConversationEntity {
