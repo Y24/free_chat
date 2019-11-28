@@ -244,20 +244,8 @@ class AccountUIState extends ExposedState<AccountUI> {
                   .requestFocus(pageController.registerPasswordRepeatFocusNode);
             },
             validator: (_) {
-              if (pageController.registerPassword.isEmpty) {
-                return FunctionPool.getStringRes(
-                  key: 'passwordValidatorEmptyStr',
-                  language: language,
-                );
-              }
-              if (!Validator.validatePassword(
-                  pageController.registerPassword)) {
-                return FunctionPool.getStringRes(
-                  key: 'passwordInvalidStr',
-                  language: language,
-                );
-              }
-              return null;
+              return pageController.registerPasswordValidate(
+                  language: language);
             },
             style: TextStyle(
               color: Colors.blue,
@@ -300,14 +288,8 @@ class AccountUIState extends ExposedState<AccountUI> {
               pageController.registerPasswordConfirm = value;
             },
             validator: (_) {
-              if (pageController.registerPasswordConfirm !=
-                  pageController.registerPassword) {
-                return FunctionPool.getStringRes(
-                  key: 'confirmFailtureStr',
-                  language: language,
-                );
-              }
-              return null;
+              return pageController.registerPasswordConfirmValidate(
+                  language: language);
             },
             style: TextStyle(
               color: Colors.blue,

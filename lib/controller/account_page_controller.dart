@@ -20,6 +20,11 @@ import 'package:free_chat/util/ui/failture_snack_bar.dart';
 import 'package:free_chat/util/ui/page_tansitions/fade_route.dart';
 import 'package:free_chat/util/validator.dart';
 
+/// [AccountPageController] is the controller of the corrosponding page [AccountPage].
+///
+/// See also:
+///
+/// [AccountPage], where the logical of *login* and *register* is hosted.
 class AccountPageController extends BasePageController {
   final loginFormKey = GlobalKey<FormState>();
   final registerFormKey = GlobalKey<FormState>();
@@ -43,7 +48,7 @@ class AccountPageController extends BasePageController {
   String get path => r'lib/page/account_page.dart';
 
   @override
-  void init({ExposedState state}) {
+  void init({@required ExposedState state}) {
     super.init(state: state);
     providerInited = false;
     provider = AccountProvider()
@@ -78,7 +83,8 @@ class AccountPageController extends BasePageController {
     });
   }
 
-  String loginUsernameValidate({Language language}) {
+  String loginUsernameValidate(
+      {Language language = Configuration.defLanguage}) {
     if (loginUsername.isEmpty) {
       return FunctionPool.getStringRes(
         key: 'usernameValidatorEmptyStr',
@@ -95,7 +101,36 @@ class AccountPageController extends BasePageController {
     return null;
   }
 
-  String loginPasswordValidate({Language language}) {
+  String registerPasswordValidate(
+      {Language language = Configuration.defLanguage}) {
+    if (registerPassword.isEmpty) {
+      return FunctionPool.getStringRes(
+        key: 'passwordValidatorEmptyStr',
+        language: language,
+      );
+    }
+    if (!Validator.validatePassword(registerPassword)) {
+      return FunctionPool.getStringRes(
+        key: 'passwordInvalidStr',
+        language: language,
+      );
+    }
+    return null;
+  }
+
+  String registerPasswordConfirmValidate(
+      {Language language = Configuration.defLanguage}) {
+    if (registerPasswordConfirm != registerPassword) {
+      return FunctionPool.getStringRes(
+        key: 'confirmFailtureStr',
+        language: language,
+      );
+    }
+    return null;
+  }
+
+  String loginPasswordValidate(
+      {Language language = Configuration.defLanguage}) {
     if (loginPassword.isEmpty) {
       return FunctionPool.getStringRes(
         key: 'passwordValidatorEmptyStr',
@@ -105,7 +140,8 @@ class AccountPageController extends BasePageController {
     return null;
   }
 
-  void register(BuildContext context, {Language language}) {
+  void register(BuildContext context,
+      {Language language = Configuration.defLanguage}) {
     if (!registerFormKey.currentState.validate()) return;
     state.update(() {
       isRegisterProcessing = true;
@@ -247,7 +283,8 @@ class AccountPageController extends BasePageController {
       });
   }
 
-  void login(BuildContext context, {Language language}) {
+  void login(BuildContext context,
+      {Language language = Configuration.defLanguage}) {
     Timer timer;
     if (!loginFormKey.currentState.validate()) return;
     state.update(() {

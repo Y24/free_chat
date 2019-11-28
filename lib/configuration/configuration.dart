@@ -171,8 +171,8 @@ abstract class Configuration {
       Language.zh: '安卓版轻聊',
     },
   };
-  static final imageResourcePathPrefix = 'res/images/';
-  static final defLanguage = Language.en;
+  static const imageResourcePathPrefix = 'res/images/';
+  static const defLanguage = Language.en;
   static ThemeDataCode defThemeDataCode = ThemeDataCode.defLight;
   static final welcomePages = {
     Language.en: [

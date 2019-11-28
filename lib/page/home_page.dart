@@ -34,7 +34,7 @@ class Homepage extends StatefulWidget {
 
 class _HomepageState extends State<Homepage> {
   int _currentTabIndex = 0;
-  List list = new List();
+  List list = [];
   int x = 0;
 
   @override
