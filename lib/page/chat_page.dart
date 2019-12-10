@@ -21,9 +21,7 @@ class ChatPage extends StatefulWidget {
 }
 
 class ChatPageState extends ExposedState<ChatPage> {
-  final String from;
-  final String to;
-  ChatPageState({this.from, this.to});
+  ChatPageState();
   final menus = [
     Icons.text_fields,
     Icons.photo,
@@ -32,10 +30,14 @@ class ChatPageState extends ExposedState<ChatPage> {
     Icons.keyboard_voice,
     Icons.attach_file,
   ];
-  ChatPageController pageController = ChatPageController();
+  ChatPageController pageController;
   @override
   void initState() {
     super.initState();
+    pageController = ChatPageController(
+      from: widget.from,
+      to: widget.to,
+    );
     pageController.init(state: this);
   }
 

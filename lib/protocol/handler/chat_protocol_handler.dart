@@ -52,32 +52,38 @@ class ChatProtocolHandler extends BaseProtocolHandler
   }
 
   bool _authenticate() => true;
-  void _response({ChatProtocolCode code, String content, DateTime timestamp}) {
-    _webSocket.add(json.encode(ChatProtocolEntity(
-      head: ChatHeadEntity(
-        id: id,
-        code: code,
-        timestamp: timestamp,
-        from: from,
-        to: to,
-        groupChatFlag: groupChatFlag,
-      ),
-      body: ChatBodyEntity(content: content),
-    ).toJson()));
+  bool _response({ChatProtocolCode code, String content, DateTime timestamp}) {
+    try {
+      _webSocket.add(json.encode(ChatProtocolEntity(
+        head: ChatHeadEntity(
+          id: id,
+          code: code,
+          timestamp: timestamp,
+          from: from,
+          to: to,
+          groupChatFlag: groupChatFlag,
+        ),
+        body: ChatBodyEntity(content: content),
+      ).toJson()));
+      return true;
+    } catch (e) {
+      print("Error while chat protocol handler is responsing: $e");
+      return false;
+    }
   }
 
   @override
-  HandleResultEntity handleNewSend(){
+  HandleResultEntity handleNewSend() {
     print('Handle new send: ${protocolEntity.body.content}');
     HandleResultEntity resultEntity =
         HandleResultEntity(code: ChatProtocolCode.newSend);
     if (_authenticate()) {
       //TODO:
-      _response(
+      if (!_response(
         code: ChatProtocolCode.accept,
         content: 'Free Chat',
         timestamp: protocolEntity.head.timestamp,
-      );
+      )) return HandleResultEntity.errorResultEntity;
       resultEntity.content = {
         'status': SendStatus.success,
         'entity': HistoryEntity(
@@ -90,11 +96,11 @@ class ChatProtocolHandler extends BaseProtocolHandler
       };
       return resultEntity;
     } else {
-      _response(
+      if (!_response(
         code: ChatProtocolCode.reject,
         content: 'password',
         timestamp: protocolEntity.head.timestamp,
-      );
+      )) return HandleResultEntity.errorResultEntity;
       resultEntity.content = {
         'status': SendStatus.reject,
         'entity': HistoryEntity(
@@ -124,16 +130,17 @@ class ChatProtocolHandler extends BaseProtocolHandler
   }
 
   @override
-  HandleResultEntity handleReSend(){
+  HandleResultEntity handleReSend() {
     HandleResultEntity resultEntity =
         HandleResultEntity(code: ChatProtocolCode.reSend);
-    
+
     if (_authenticate()) {
       //TODO:
       resultEntity.content = true;
       return resultEntity;
     } else {
-      _response(code: ChatProtocolCode.reject, content: 'password');
+      if (!_response(code: ChatProtocolCode.reject, content: 'password'))
+        return HandleResultEntity.errorResultEntity;
       resultEntity.content = false;
       return resultEntity;
     }
@@ -143,7 +150,7 @@ class ChatProtocolHandler extends BaseProtocolHandler
   HandleResultEntity handleReject() {
     HandleResultEntity resultEntity =
         HandleResultEntity(code: ChatProtocolCode.reject);
-   
+
     if (_authenticate()) {
       //TODO:
       resultEntity.content = true;

@@ -60,7 +60,7 @@ class ChatPageController extends BasePageController {
   Timer syncHistoryTimer;
   @override
   String get path => r'lib/page/chat_page.dart';
-  ChatPageController({this.from, this.to});
+  ChatPageController({@required this.from, @required this.to});
   @override
   init({ExposedState state}) {
     super.init(state: state);
@@ -116,7 +116,7 @@ class ChatPageController extends BasePageController {
       });
   }
 
-  void initWebSocket() async {
+  Future<void> initWebSocket() async {
     isConnected = false;
     isConnecting = true;
     chatService = ChatProtocolService(

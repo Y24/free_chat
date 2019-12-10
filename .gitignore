@@ -1,6 +1,9 @@
 #project
 lib/configuration/mysql_conf.dart
 
+#latex
+doc/report/*
+
 # Miscellaneous
 *.class
 *.log

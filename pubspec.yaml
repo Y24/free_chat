@@ -32,7 +32,7 @@ dependencies:
   sqflite: 1.1.7+2
   path_provider:
   get_it:
-  connectivity:
+  connectivity: 0.4.5+7
   image_picker: 0.6.1+10
 
 dev_dependencies:
