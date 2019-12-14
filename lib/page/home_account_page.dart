@@ -278,7 +278,7 @@ class HomeAccountPage extends StatelessWidget {
             key: 'appearenceStr', language: languageState.language)),
         onTap: () {
           Navigator.of(context)
-              .push(SlideRightRoute(page: AppearenceSettingPage()));
+              .push(SlideRightRoute(page: AppearenceSettingPage(username)));
         },
       ),
       divider,

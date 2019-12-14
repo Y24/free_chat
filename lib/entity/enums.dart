@@ -1,4 +1,5 @@
 enum Language {
+  auto,
   en,
   zh,
 }

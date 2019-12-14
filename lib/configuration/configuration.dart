@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:free_chat/entity/enums.dart';
 
 class WelcomePageResource {
@@ -48,12 +49,10 @@ abstract class Configuration {
       Language.en: 'Username',
       Language.zh: '用户名',
     },
-    
     'aboutStr': {
       Language.en: 'About',
       Language.zh: '关于',
     },
-
     'passwordStr': {
       Language.en: 'Password',
       Language.zh: '密码',
@@ -221,5 +220,29 @@ abstract class Configuration {
   static final languagesStr = {
     Language.en: 'Language',
     Language.zh: '语言',
+  };
+  static final allSupportedLanguages = {
+    'auto': Language.auto,
+    'en': Language.en,
+    'zh': Language.zh,
+  };
+  static final allSupportedPrimaryColors = {
+    'amber': Colors.amber,
+    'blue': Colors.blue,
+    'brown': Colors.brown,
+    'cyan': Colors.cyan,
+    'green': Colors.green,
+    'lime': Colors.lime,
+    'orange': Colors.orange,
+    'pink': Colors.pink,
+    'purple': Colors.purple,
+    'red': Colors.red,
+    'teal': Colors.teal,
+    'yellow': Colors.yellow,
+  };
+  static final allSupportedThemeDataCodes = {
+    'auto': ThemeDataCode.auto,
+    'light': ThemeDataCode.defLight,
+    'dark': ThemeDataCode.defDark,
   };
 }

@@ -103,7 +103,7 @@ class ConfigurationProvider extends BaseProvider
           'key',
           'content',
           'create_timestamp',
-          'last_modified'
+          'last_modified',
         ],
       };
 

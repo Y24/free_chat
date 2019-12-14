@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:free_chat/entity/enums.dart';
-import 'package:free_chat/provider/base_provider.dart';
-import 'package:free_chat/provider/configuration_provider.dart';
-import 'package:free_chat/provider/entity/provider_code.dart';
-import 'package:free_chat/provider/entity/provider_entity.dart';
+import 'package:free_chat/provider/mixin/configuration_mixin.dart';
 import 'package:free_chat/util/function_pool.dart';
 import 'package:provider/provider.dart';
 
@@ -61,42 +58,22 @@ class CustomThemeDataState extends ChangeNotifier {
   int get hashCode => themeData.hashCode;
 }
 
-class CustomStyleState extends State<CustomStyle> {
+class CustomStyleState extends State<CustomStyle> with ConfigurationMixin {
   bool _isFetching = true;
-  IProvider _provider;
   String languageCode;
   ThemeDataCode themeDataCode;
   Color primaryColor;
   @override
   void initState() {
     super.initState();
-    _provider = ConfigurationProvider(username: widget.username)
-      ..init().then((result) async {
-        if (result) {
-          languageCode = await _getLanguageCode();
-          themeDataCode = await _getThemeDataCode();
-          primaryColor = await _getPrimaryColor();
-          _isFetching = false;
-        }
-      });
-  }
-
-  Future<String> _getLanguageCode() async {
-    _provider.setEntity(
-        ProviderEntity(code: ConfigurationProviderCode.queryLanguage));
-    return await _provider.provide();
-  }
-
-  Future<ThemeDataCode> _getThemeDataCode() async {
-    _provider
-        .setEntity(ProviderEntity(code: ConfigurationProviderCode.queryTheme));
-    return FunctionPool.getThemeDataCodeFromStr(await _provider.provide());
-  }
-
-  Future<Color> _getPrimaryColor() async {
-    _provider.setEntity(
-        ProviderEntity(code: ConfigurationProviderCode.queryPrimaryColor));
-    return FunctionPool.getPrimaryColorFromStr(await _provider.provide());
+    init(widget.username).then((result) async {
+      if (result) {
+        languageCode = await getLanguageCode();
+        themeDataCode = await getThemeDataCode();
+        primaryColor = await getPrimaryColor();
+        _isFetching = false;
+      }
+    });
   }
 
   @override

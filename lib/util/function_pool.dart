@@ -9,36 +9,29 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 abstract class FunctionPool {
-  static final _languages = {
-    'en': Language.en,
-    'zh': Language.zh,
-  };
   static Language getLanguageFromLocale({final Locale locale}) =>
-      _languages[locale.languageCode];
+      Configuration.allSupportedLanguages[locale.languageCode];
 
   static Language getLanguageFromCode(String code, {final Locale locale}) {
     if (code == 'auto')
       return getLanguageFromLocale(locale: locale);
     else
-      return _languages[code];
+      return Configuration.allSupportedLanguages[code];
   }
-
-  static String getCodeFromLanguage({final Language language}) => _languages
+  
+  static String getCodeFromLanguage({final Language language}) => Configuration
+      .allSupportedLanguages
       .map((String s, Language language) => MapEntry(language, s))[language];
 
   static final _themeDatas = {
     ThemeDataCode.defLight: ThemeData.light(),
     ThemeDataCode.defDark: ThemeData.dark(),
   };
-  static final _themeDataCodes = {
-    'auto': ThemeDataCode.auto,
-    'light': ThemeDataCode.defLight,
-    'dark': ThemeDataCode.defDark,
-  };
   static ThemeDataCode getThemeDataCodeFromStr(String str) =>
-      _themeDataCodes[str];
+      Configuration.allSupportedThemeDataCodes[str];
   static String getStrFromThemeDataCode(ThemeDataCode code) =>
-      _themeDataCodes.map((s, t) => MapEntry(t, s))[code];
+      Configuration.allSupportedThemeDataCodes
+          .map((s, t) => MapEntry(t, s))[code];
   static ThemeData getThemeDataFromCode(ThemeDataCode themeDataCode,
       {final Brightness brightness, Color primaryColor}) {
     ThemeData tmp;
@@ -51,23 +44,11 @@ abstract class FunctionPool {
     return tmp.copyWith(primaryColor: primaryColor);
   }
 
-  static final _colors = {
-    'amber': Colors.amber,
-    'blue': Colors.blue,
-    'brown': Colors.brown,
-    'cyan': Colors.cyan,
-    'green': Colors.green,
-    'lime': Colors.lime,
-    'orange': Colors.orange,
-    'pink': Colors.pink,
-    'purple': Colors.purple,
-    'red': Colors.red,
-    'teal': Colors.teal,
-    'yellow': Colors.yellow,
-  };
-  static Color getPrimaryColorFromStr(String str) => _colors[str];
+  static Color getPrimaryColorFromStr(String str) =>
+      Configuration.allSupportedPrimaryColors[str];
   static String getStrFromPrimaryColor(Color color) =>
-      _colors.map((s, c) => MapEntry(c, s))[color];
+      Configuration.allSupportedPrimaryColors
+          .map((s, c) => MapEntry(c, s))[color];
   static String getStringRes({@required final key, @required final language}) =>
       Configuration.strPool[key][language];
 
@@ -158,6 +139,7 @@ abstract class FunctionPool {
       ),
     );
   }
+
   static bool shouldShowTimeStamp(final List<HistoryEntity> list, int index) {
     assert(index < list.length && index >= 0);
     if (index == list.length - 1) return false;
