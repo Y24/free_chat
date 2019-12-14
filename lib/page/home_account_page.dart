@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:free_chat/entity/enums.dart';
+import 'package:free_chat/page/settings/appearence_setting_page.dart';
 import 'package:free_chat/protocol/entity/account_protocol_entity.dart';
 import 'package:free_chat/protocol/sender/account_protocol_sender.dart';
 import 'package:free_chat/protocol/sender/base_protocol_sender.dart';
@@ -10,6 +11,7 @@ import 'package:free_chat/provider/entity/provider_entity.dart';
 import 'package:free_chat/util/function_pool.dart';
 import 'package:free_chat/util/ui/custom_style.dart';
 import 'package:free_chat/util/ui/page_tansitions/scale_route.dart';
+import 'package:free_chat/util/ui/page_tansitions/slide_route.dart';
 import 'package:provider/provider.dart';
 
 import 'account_page.dart';
@@ -167,7 +169,7 @@ class HomeAccountPage extends StatelessWidget {
         SliverList(
           delegate: SliverChildListDelegate([
             ..._buildAccountListView(languageState: languageState),
-            ..._buildSettingListView(languageState: languageState),
+            ..._buildSettingListView(context, languageState: languageState),
             buildAboutButtomContainer(languageState: languageState),
           ]),
         )
@@ -243,7 +245,8 @@ class HomeAccountPage extends StatelessWidget {
     ];
   }
 
-  List<Widget> _buildSettingListView({LanguageState languageState}) {
+  List<Widget> _buildSettingListView(BuildContext context,
+      {LanguageState languageState}) {
     const divider = const Divider(
       color: Colors.blueGrey,
       indent: 24,
@@ -273,7 +276,10 @@ class HomeAccountPage extends StatelessWidget {
         ),
         title: Text(FunctionPool.getStringRes(
             key: 'appearenceStr', language: languageState.language)),
-        onTap: () {},
+        onTap: () {
+          Navigator.of(context)
+              .push(SlideRightRoute(page: AppearenceSettingPage()));
+        },
       ),
       divider,
       ListTile(

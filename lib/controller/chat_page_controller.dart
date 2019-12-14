@@ -341,9 +341,10 @@ class ChatPageController extends BasePageController {
   }
 
   void messageHistoryPreWork() {
-    totalList.clear();
-    totalList.insertAll(0, unreadList);
-    totalList.insertAll(0, list);
+    totalList
+      ..clear()
+      ..insertAll(0, unreadList)
+      ..insertAll(0, list);
     clearHistoryTimer?.cancel();
     clearHistoryTimer = null;
   }

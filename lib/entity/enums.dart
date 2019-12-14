@@ -32,6 +32,7 @@ enum RegisterStatus {
   unknownError,
 }
 enum ThemeDataCode {
+  auto,
   defLight,
   defDark,
 }

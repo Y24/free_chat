@@ -8,9 +8,9 @@ class ProfileEntity {
   @required
   String username;
   List labels;
-  // likes shares notes
+  /// Likes Shares Notes
   List lsnCount;
-  // body list title
+  /// body list title
   List infos;
   ProfileEntity({this.username, this.labels, this.lsnCount, this.infos});
   ProfileEntity.fromMap(Map<String, dynamic> map)

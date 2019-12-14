@@ -44,3 +44,11 @@ enum RequestProviderCode {
   queryRequest,
   queryAllRequest,
 }
+enum ConfigurationProviderCode {
+  queryLanguage,
+  queryTheme,
+  queryPrimaryColor,
+  updateLanguage,
+  updateTheme,
+  updatePrimaryColor,
+}

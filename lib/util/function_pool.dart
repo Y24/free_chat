@@ -13,34 +13,66 @@ abstract class FunctionPool {
     'en': Language.en,
     'zh': Language.zh,
   };
-  static Language getLanguageFromLocale({final Locale locale}) {
-    return _languages[locale.languageCode];
+  static Language getLanguageFromLocale({final Locale locale}) =>
+      _languages[locale.languageCode];
+
+  static Language getLanguageFromCode(String code, {final Locale locale}) {
+    if (code == 'auto')
+      return getLanguageFromLocale(locale: locale);
+    else
+      return _languages[code];
   }
 
-  static Language getLanguageFromCode({final String code}) {
-    return _languages[code];
-  }
-
-  static String getCodeFromLanguage({final Language language}) {
-    return _languages
-        .map((String s, Language language) => MapEntry(language, s))[language];
-  }
+  static String getCodeFromLanguage({final Language language}) => _languages
+      .map((String s, Language language) => MapEntry(language, s))[language];
 
   static final _themeDatas = {
     ThemeDataCode.defLight: ThemeData.light(),
     ThemeDataCode.defDark: ThemeData.dark(),
   };
-  static ThemeData getThemeData({ThemeDataCode themeDataCode}) {
-    return _themeDatas[themeDataCode];
+  static final _themeDataCodes = {
+    'auto': ThemeDataCode.auto,
+    'light': ThemeDataCode.defLight,
+    'dark': ThemeDataCode.defDark,
+  };
+  static ThemeDataCode getThemeDataCodeFromStr(String str) =>
+      _themeDataCodes[str];
+  static String getStrFromThemeDataCode(ThemeDataCode code) =>
+      _themeDataCodes.map((s, t) => MapEntry(t, s))[code];
+  static ThemeData getThemeDataFromCode(ThemeDataCode themeDataCode,
+      {final Brightness brightness, Color primaryColor}) {
+    ThemeData tmp;
+    if (themeDataCode == ThemeDataCode.auto) {
+      tmp =
+          brightness == Brightness.light ? ThemeData.light() : ThemeData.dark();
+    } else {
+      tmp = _themeDatas[themeDataCode];
+    }
+    return tmp.copyWith(primaryColor: primaryColor);
   }
 
-  static String getStringRes({@required final key, @required final language}) {
-    return Configuration.strPool[key][language];
-  }
+  static final _colors = {
+    'amber': Colors.amber,
+    'blue': Colors.blue,
+    'brown': Colors.brown,
+    'cyan': Colors.cyan,
+    'green': Colors.green,
+    'lime': Colors.lime,
+    'orange': Colors.orange,
+    'pink': Colors.pink,
+    'purple': Colors.purple,
+    'red': Colors.red,
+    'teal': Colors.teal,
+    'yellow': Colors.yellow,
+  };
+  static Color getPrimaryColorFromStr(String str) => _colors[str];
+  static String getStrFromPrimaryColor(Color color) =>
+      _colors.map((s, c) => MapEntry(c, s))[color];
+  static String getStringRes({@required final key, @required final language}) =>
+      Configuration.strPool[key][language];
 
-  static getAccountInfo(SharedPreferences preferences, {String target}) {
-    return preferences.get(Configuration.sharedPrefKeys['account'][target]);
-  }
+  static getAccountInfo(SharedPreferences preferences, {String target}) =>
+      preferences.get(Configuration.sharedPrefKeys['account'][target]);
 
   static addAccountInfo(SharedPreferences preferences,
       {String target, final value}) async {
@@ -77,9 +109,8 @@ abstract class FunctionPool {
     print('No suit type fo $value with runtimeType ${value.runtimeType}!');
   }
 
-  static getCustomStyle(SharedPreferences preferences, {String target}) {
-    return preferences.get(Configuration.sharedPrefKeys['customStyle'][target]);
-  }
+  static getCustomStyle(SharedPreferences preferences, {String target}) =>
+      preferences.get(Configuration.sharedPrefKeys['customStyle'][target]);
 
   static Future<void> addCustomStyle(SharedPreferences preferences,
       {String target, String value}) async {
@@ -127,18 +158,6 @@ abstract class FunctionPool {
       ),
     );
   }
-
-  static ThemeDataCode getThemeDataCodeFromStr(String themeDataStr) {
-    switch (themeDataStr) {
-      case 'defLight':
-        return ThemeDataCode.defLight;
-      case 'defDark':
-        return ThemeDataCode.defDark;
-      default:
-        return ThemeDataCode.defLight;
-    }
-  }
-
   static bool shouldShowTimeStamp(final List<HistoryEntity> list, int index) {
     assert(index < list.length && index >= 0);
     if (index == list.length - 1) return false;
