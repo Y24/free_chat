@@ -14,7 +14,7 @@ class ChatPage extends StatefulWidget {
     assert(nullOk != null);
     assert(context != null);
     final ChatPageState result =
-        context.ancestorStateOfType(const TypeMatcher<ChatPageState>());
+        context.findAncestorStateOfType<ChatPageState>();
     if (nullOk || result != null) return result;
     throw FlutterError('Love you, yue');
   }

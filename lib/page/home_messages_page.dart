@@ -16,7 +16,7 @@ class HomeMessagesPage extends StatefulWidget {
     assert(nullOk != null);
     assert(context != null);
     final HomeMessagesPageState result =
-        context.ancestorStateOfType(const TypeMatcher<HomeMessagesPageState>());
+    context.findAncestorStateOfType<HomeMessagesPageState>();
     if (nullOk || result != null) return result;
     throw FlutterError('Love you, yue');
   }
