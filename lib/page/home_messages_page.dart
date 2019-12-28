@@ -27,7 +27,7 @@ class HomeMessagesPageState extends State<HomeMessagesPage> {
   IProvider provider;
   List list = [];
 
-  Future<Null> _onRefresh() async {
+  Future<void> _onRefresh() async {
     if (fetched) {
       try {
         provider.setEntity(ProviderEntity(
